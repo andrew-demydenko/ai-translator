@@ -12,7 +12,7 @@ export const AlternativeChip: React.FC<AlternativeChipProps> = ({
   return (
     <button
       onClick={() => onClick(text)}
-      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border border-gray-200"
+      className="bg-gray-100 text-left px-6 hover:bg-gray-200 text-gray-700 py-2 rounded-full text-sm font-medium transition-colors border border-gray-200"
       title="Click to replace main translation"
     >
       {text}

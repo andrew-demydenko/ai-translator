@@ -21,14 +21,16 @@ const App: React.FC = () => {
     streamedResult,
     status,
     error,
+    history,
     handleTranslate,
     handleSwapLanguages,
     handleReplaceTranslation,
+    clearHistory,
   } = useTranslationState();
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="h-screen bg-slate-50 p-4 md:p-8 flex flex-col">
+      <div className="flex-1 max-w-4xl mx-auto space-y-6 w-full flex flex-col min-h-[1px]">
         <Header mode={mode} setMode={setMode} />
 
         <TranslationForm
@@ -43,6 +45,8 @@ const App: React.FC = () => {
           onTranslate={handleTranslate}
           onSwapLanguages={handleSwapLanguages}
           isStreaming={status === "streaming"}
+          history={history}
+          onClearHistory={clearHistory}
         />
 
         <ErrorMessage error={error} />

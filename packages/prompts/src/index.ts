@@ -8,19 +8,19 @@ Respond using the following delimited format to allow for real-time streaming:
 (primary translation)
 
 [ALTERNATIVES]
-(alternative A2 level) | (alternative B1 level) | (alternative B2 level) | (alternative C1 level)  (alternative C2 level)
+alternative A2 level | alternative B1 level | alternative B2 level | alternative C1 level  alternative C2 level
 
 [EXAMPLES]
-(source 1) -> (translated 1) | (source 2) -> (translated 2)
+source 1 -> translated 1 | source 2 -> translated 2
 
 [FORMALITY]
 (formal/neutral/informal)
 
 [CONFIDENCE]
-(number between 0 and 1)
+number between 0 and 1
 
 [CONTEXT]
-(Explain where this phrase can be used)
+Explain where this phrase can be used
 
 Order of sections:
  1. [FORMALITY]

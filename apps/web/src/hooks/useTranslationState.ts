@@ -17,6 +17,22 @@ export const useTranslationState = () => {
   const [streamedResult, setStreamedResult] = useState<
     Partial<TranslationResult>
   >({});
+  const [lastTranslatedText, setLastTranslatedText] = useState("");
+  const [history, setHistory] = useState<
+    { original: string; translated: string }[]
+  >([]);
+
+  // Load history from localStorage on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("translation_history");
+    if (savedHistory) {
+      try {
+        setHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Failed to parse history", e);
+      }
+    }
+  }, []);
 
   const { translate, status, result, fieldUpdates, error } =
     useTranslationSocket("ws://localhost:3001");
@@ -25,6 +41,25 @@ export const useTranslationState = () => {
     if (result) {
       setStreamedResult(result);
       setCurrentTranslation(result.translation);
+
+      // Add to history
+      setHistory((prev) => {
+        const textToSave = lastTranslatedText || text;
+        const newEntry = {
+          original: textToSave,
+          translated: result.translation,
+        };
+        // Avoid duplicates if the same thing is translated consecutively
+        if (prev.length > 0 && prev[0].original === textToSave) {
+          return prev;
+        }
+        const updatedHistory = [newEntry, ...prev].slice(0, 10);
+        localStorage.setItem(
+          "translation_history",
+          JSON.stringify(updatedHistory),
+        );
+        return updatedHistory;
+      });
     } else if (status === "streaming") {
       setStreamedResult(fieldUpdates);
       if (fieldUpdates.translation) {
@@ -64,6 +99,7 @@ export const useTranslationState = () => {
 
     setCurrentTranslation("");
     setStreamedResult({});
+    setLastTranslatedText(text);
     translate({
       text,
       sourceLang: currentSource,
@@ -82,6 +118,11 @@ export const useTranslationState = () => {
     setCurrentTranslation(newText);
   };
 
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem("translation_history");
+  };
+
   return {
     // State
     text,
@@ -98,9 +139,11 @@ export const useTranslationState = () => {
     streamedResult,
     status,
     error,
+    history,
     // Handlers
     handleTranslate,
     handleSwapLanguages,
     handleReplaceTranslation,
+    clearHistory,
   };
 };
