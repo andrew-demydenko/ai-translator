@@ -3,6 +3,7 @@ export interface TranslationRequest {
   sourceLang: string;
   targetLang: string;
   mode: "standard" | "formal" | "informal" | "technical";
+  contextLanguage: string;
 }
 
 export interface SentenceExample {
@@ -20,7 +21,13 @@ export interface TranslationResult {
 }
 
 export interface WSMessage<T = unknown> {
-  type: "translate" | "chunk" | "done" | "error";
+  type: "translate" | "chunk" | "done" | "error" | "field_update";
   requestId: string;
   payload: T;
+}
+
+export interface FieldUpdatePayload {
+  field: keyof TranslationResult;
+  value: any;
+  isComplete: boolean;
 }

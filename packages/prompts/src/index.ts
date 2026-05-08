@@ -1,22 +1,49 @@
 import { TranslationRequest } from "@ai-translator/shared-types";
 
-export const SYSTEM_PROMPT = `
-You are an expert linguist and translator.
-Always respond with a single valid JSON object — no markdown, no explanation outside JSON.
+export const getSystemPromptTemplate = (req: TranslationRequest) => {
+  return `You are an expert linguist and translator.
+Respond using the following delimited format to allow for real-time streaming:
 
-Required fields:
-- translation: string          — primary translation
-- alternatives: string[]       — 2 to 4 alternative phrasings
-- examples: { source: string, translated: string }[]  — 2 usage examples
-- contextNote: string          — explain the difference between alternatives
-- formality: "formal" | "neutral" | "informal"
-- confidence: number           — 0 to 1
+[TRANSLATION]
+(primary translation)
+
+[ALTERNATIVES]
+(alternative A2 level) | (alternative B1 level) | (alternative B2 level) | (alternative C1 level)  (alternative C2 level)
+
+[EXAMPLES]
+(source 1) -> (translated 1) | (source 2) -> (translated 2)
+
+[FORMALITY]
+(formal/neutral/informal)
+
+[CONFIDENCE]
+(number between 0 and 1)
+
+[CONTEXT]
+(Explain where this phrase can be used)
+
+Order of sections:
+ 1. [FORMALITY]
+ 2. [CONFIDENCE]
+ 3. [TRANSLATION]
+ 4. [ALTERNATIVES]
+ 5. [EXAMPLES]
+ 6. [CONTEXT]
+
+IMPORTANT:
+1. Keep the tags exactly as shown (e.g., [TRANSLATION]).
+2. Use "|" to separate items in ALTERNATIVES and EXAMPLES.
+3. Indicate level of each alternative sentence (level).
+4. Use "->" to separate source and translation in EXAMPLES, Number of examples is 3 and level is about 10 words.
+5. Answer [CONTEXT] section in ${req.contextLanguage}.
 `.trim();
+};
 
 export function buildTranslatePrompt(req: TranslationRequest): string {
   return `
 Translate the following text from ${req.sourceLang} to ${req.targetLang}.
 Mode: ${req.mode}.
+contextLanguage: ${req.contextLanguage}.
 
 Text: "${req.text}"
 

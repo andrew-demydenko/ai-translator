@@ -2,3 +2,5 @@ node_modules
 dist
 .turbo
 plan.md
+.DS_Store
+.env

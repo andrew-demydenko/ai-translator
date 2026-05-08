@@ -5,6 +5,7 @@ export const TranslationRequestSchema = z.object({
   sourceLang: z.string().min(2),
   targetLang: z.string().min(2),
   mode: z.enum(["standard", "formal", "informal", "technical"]).default("standard"),
+  contextLanguage: z.string().min(2).default("English"),
 });
 
 export type TranslationRequestDTO = z.infer<typeof TranslationRequestSchema>;

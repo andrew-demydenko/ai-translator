@@ -1,0 +1,83 @@
+import React from "react";
+import { TranslationResult } from "@ai-translator/shared-types";
+import { FormalityBadge } from "./FormalityBadge";
+import { AlternativeChip } from "./AlternativeChip";
+import { ContextNote } from "./ContextNote";
+import { ExamplesSection } from "./ExamplesSection";
+
+interface TranslationResultSectionProps {
+  status: string;
+  currentTranslation: string;
+  streamedResult: Partial<TranslationResult>;
+  onReplaceTranslation: (newText: string) => void;
+}
+
+export const TranslationResultSection: React.FC<
+  TranslationResultSectionProps
+> = ({ status, currentTranslation, streamedResult, onReplaceTranslation }) => {
+  if (status === "idle" && !currentTranslation) return null;
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
+          Translation
+        </h2>
+        {streamedResult.formality && (
+          <FormalityBadge level={streamedResult.formality} />
+        )}
+      </div>
+
+      <div className="min-h-[4rem]">
+        {status === "streaming" && !currentTranslation ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-6 bg-slate-100 rounded w-full"></div>
+            <div className="h-6 bg-slate-100 rounded w-2/3"></div>
+          </div>
+        ) : (
+          <div className="relative">
+            <p
+              className={`text-xl font-semibold text-slate-800 leading-relaxed ${
+                status === "streaming" ? "opacity-70" : ""
+              }`}
+            >
+              {currentTranslation}
+              {status === "streaming" && (
+                <span className="inline-block w-1 h-6 ml-1 bg-blue-500 animate-pulse align-middle" />
+              )}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {streamedResult.alternatives &&
+        streamedResult.alternatives.length > 0 && (
+          <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Alternatives
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {streamedResult.alternatives.map((alt, i) => (
+                <AlternativeChip
+                  key={i}
+                  text={alt}
+                  onClick={onReplaceTranslation}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+      {streamedResult.examples && streamedResult.examples.length > 0 && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000">
+          <ExamplesSection examples={streamedResult.examples} />
+        </div>
+      )}
+      {streamedResult.contextNote && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+          <ContextNote note={streamedResult.contextNote} />
+        </div>
+      )}
+    </div>
+  );
+};

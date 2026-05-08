@@ -10,7 +10,11 @@ export class WSHandler {
 
   private init() {
     this.socket.on("message", (data) => this.handleMessage(data));
-    this.socket.on("close", () => console.log("WS connection closed"));
+    this.socket.on("close", (code, reason) => {
+      console.log(
+        `WS connection closed. Code: ${code}, Reason: ${reason || "none"}`,
+      );
+    });
     this.socket.on("error", (err) => console.error("WS socket error:", err));
   }
 
@@ -23,14 +27,18 @@ export class WSHandler {
       // Validate payload
       const validated = TranslationRequestSchema.parse(msg.payload);
 
+      console.log(validated);
+
       // Perform translation via service
-      const result = await translationService.translateStream(validated, (chunk) => {
-        this.send({
-          type: "chunk",
-          requestId: msg.requestId,
-          payload: chunk,
-        });
-      });
+      const result = await translationService.translateStream(
+        validated,
+        (event) => {
+          this.send({
+            ...event,
+            requestId: msg.requestId,
+          } as WSMessage<any>);
+        },
+      );
 
       // Send final result
       this.send({
@@ -38,7 +46,6 @@ export class WSHandler {
         requestId: msg.requestId,
         payload: result,
       });
-
     } catch (error: any) {
       console.error("WS Handler Error:", error);
       this.send({

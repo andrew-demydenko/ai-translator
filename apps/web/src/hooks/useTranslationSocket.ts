@@ -3,12 +3,14 @@ import {
   WSMessage,
   TranslationRequest,
   TranslationResult,
+  FieldUpdatePayload,
 } from "@ai-translator/shared-types";
 
 interface TranslationState {
   status: "idle" | "streaming" | "done" | "error";
   chunks: string;
   result: TranslationResult | null;
+  fieldUpdates: Partial<TranslationResult>;
   error: string | null;
 }
 
@@ -18,6 +20,7 @@ export function useTranslationSocket(url: string) {
     status: "idle",
     chunks: "",
     result: null,
+    fieldUpdates: {},
     error: null,
   });
 
@@ -25,9 +28,15 @@ export function useTranslationSocket(url: string) {
     const ws = new WebSocket(url);
     wsRef.current = ws;
 
+    ws.onopen = () => {
+      console.log("WebSocket connected to", url);
+      setState((s) => ({ ...s, error: null }));
+    };
+
     ws.onmessage = (event) => {
       try {
         const msg: WSMessage = JSON.parse(event.data);
+        console.log("WS Received:", msg.type, msg.payload);
 
         if (msg.type === "chunk") {
           setState((s) => ({
@@ -35,10 +44,21 @@ export function useTranslationSocket(url: string) {
             status: "streaming",
             chunks: s.chunks + (msg.payload as string),
           }));
+        } else if (msg.type === "field_update") {
+          const { field, value } = msg.payload as FieldUpdatePayload;
+          setState((s) => ({
+            ...s,
+            status: "streaming",
+            fieldUpdates: {
+              ...s.fieldUpdates,
+              [field]: value,
+            },
+          }));
         } else if (msg.type === "done") {
           setState({
             status: "done",
             chunks: "",
+            fieldUpdates: {},
             result: msg.payload as TranslationResult,
             error: null,
           });
@@ -55,7 +75,7 @@ export function useTranslationSocket(url: string) {
     };
 
     ws.onerror = (err) => {
-      console.error("WebSocket error", err);
+      console.error("WebSocket error:", err);
       setState((s) => ({
         ...s,
         status: "error",
@@ -63,7 +83,19 @@ export function useTranslationSocket(url: string) {
       }));
     };
 
+    ws.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason);
+      if (!event.wasClean) {
+        setState((s) => ({
+          ...s,
+          status: "error",
+          error: `Connection closed unexpectedly (${event.code})`,
+        }));
+      }
+    };
+
     return () => {
+      console.log("Cleaning up WebSocket...");
       ws.close();
     };
   }, [url]);
@@ -83,7 +115,13 @@ export function useTranslationSocket(url: string) {
         return;
       }
 
-      setState({ status: "streaming", chunks: "", result: null, error: null });
+      setState({
+        status: "streaming",
+        chunks: "",
+        result: null,
+        fieldUpdates: {},
+        error: null,
+      });
       wsRef.current.send(
         JSON.stringify({
           type: "translate",

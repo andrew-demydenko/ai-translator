@@ -1,13 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [".env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "env": ["OLLAMA_MODEL", "OLLAMA_HOST"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["OLLAMA_MODEL", "OLLAMA_HOST"]
     },
     "lint": {},
     "type-check": {
