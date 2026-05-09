@@ -64,7 +64,7 @@ export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 max-w-[600px] bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 overflow-hidden">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h3 className="text-sm font-bold text-slate-700 text-nowrap">
               История переводов
@@ -84,7 +84,7 @@ export const HistoryPopover: React.FC<HistoryPopoverProps> = ({
                 История пуста
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 w-[600px]">
+              <div className="divide-y divide-slate-100 w-[70vw] max-w-[600px]">
                 {history.map((entry, index) => (
                   <div
                     key={index}

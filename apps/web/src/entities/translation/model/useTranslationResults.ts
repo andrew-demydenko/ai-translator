@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useTranslationSocket } from "./useTranslationSocket";
+import { useTranslationSocket } from "../api/useTranslationSocket";
 import { TranslationResult } from "@ai-translator/shared-types";
 
 export const useTranslationResults = (socketUrl: string = "ws://localhost:3001") => {

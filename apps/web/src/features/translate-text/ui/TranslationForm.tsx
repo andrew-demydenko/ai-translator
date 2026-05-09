@@ -1,5 +1,5 @@
 import React from "react";
-import { HistoryPopover } from "./HistoryPopover";
+import { HistoryPopover } from "../../view-history";
 
 interface TranslationFormProps {
   text: string;
@@ -100,10 +100,13 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
         onChange={(e) => setText(e.target.value)}
       />
 
-      <div className="flex justify-between gap-6">
+      <div className="flex justify-between gap-6 max-sm:flex-col">
         <div className="flex items-center gap-4 bg-slate-50 p-1 px-3 rounded-lg border border-slate-100 flex-1">
           <div className="flex-1 flex gap-3 items-center">
-            <label className="text-xs font-bold text-slate-400 uppercase whitespace-nowrap">
+            <label className="text-xs font-bold text-slate-400 uppercase whitespace-nowrap sm:hidden">
+              Expl. Lang.:
+            </label>
+            <label className="text-xs font-bold text-slate-400 uppercase whitespace-nowrap max-sm:hidden">
               Explanations Language:
             </label>
             <button

@@ -5,8 +5,8 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { Header } from "./components/layout/Header";
-import { TranslationPage } from "./pages/TranslationPage";
+import { Header } from "@/widgets/header";
+import { TranslationPage } from "@/pages/translation";
 
 const App: React.FC = () => {
   return (

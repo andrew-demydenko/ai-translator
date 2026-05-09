@@ -1,14 +1,16 @@
 import React, { useEffect, useCallback } from "react";
 import { useParams, NavLink } from "react-router-dom";
 import { clsx } from "clsx";
-import { useTranslationState } from "../hooks/useTranslationState";
-import { useTranslationConfig } from "../hooks/useTranslationConfig";
-import { useTranslationHistory } from "../hooks/useTranslationHistory";
-import { useTranslationResults } from "../hooks/useTranslationResults";
-import { TranslationForm } from "../components/TranslationForm";
-import { TranslationResultSection } from "../components/translationResult/TranslationResultSection";
-import { ErrorMessage } from "../components/ErrorMessage";
 import { TranslationRequest } from "@ai-translator/shared-types";
+import { 
+  useTranslationState, 
+  useTranslationConfig, 
+  useTranslationHistory, 
+  useTranslationResults,
+  TranslationResultSection 
+} from "@/entities/translation";
+import { TranslationForm } from "@/features/translate-text";
+import { ErrorMessage } from "@/shared/ui";
 
 export const modes: TranslationRequest["mode"][] = [
   "standard",
@@ -17,7 +19,7 @@ export const modes: TranslationRequest["mode"][] = [
   "technical",
 ];
 
-export const TranslationPage: React.FC = () => {
+export const TranslationWidget: React.FC = () => {
   const { mode: modeParam } = useParams<{ mode?: string }>();
   const mode = (modeParam as TranslationRequest["mode"]) || "standard";
 
