@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TranslationRequest } from "@ai-translator/shared-types";
 
-export const useTranslationConfig = () => {
+export const useTranslationConfig = (
+  initialMode: TranslationRequest["mode"] = "standard",
+) => {
   const [sourceLang, setSourceLang] = useState("rus");
   const [targetLang, setTargetLang] = useState("eng");
-  const [mode, setMode] = useState<TranslationRequest["mode"]>("standard");
+  const [mode, setMode] = useState<TranslationRequest["mode"]>(initialMode);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
   const [contextLang, setContextLang] = useState<"русский" | "english">(
     "русский",
   );
