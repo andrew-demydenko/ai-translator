@@ -27,8 +27,6 @@ export class WSHandler {
       // Validate payload
       const validated = TranslationRequestSchema.parse(msg.payload);
 
-      console.log(validated);
-
       // Perform translation via service
       const result = await translationService.translateStream(
         validated,

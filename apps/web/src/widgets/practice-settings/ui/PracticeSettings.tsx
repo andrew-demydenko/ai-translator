@@ -24,7 +24,7 @@ export const PracticeSettings: React.FC<PracticeSettingsProps> = ({
   setSelectedWordCount,
 }) => {
   return (
-    <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6">
+    <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 w-[350px]">
       <LanguageSelect
         sourceLang={sourceLang}
         setSourceLang={setSourceLang}
@@ -52,7 +52,7 @@ export const PracticeSettings: React.FC<PracticeSettingsProps> = ({
 
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Word Count Range
+            Word Count
           </label>
           <select
             value={selectedWordCount}

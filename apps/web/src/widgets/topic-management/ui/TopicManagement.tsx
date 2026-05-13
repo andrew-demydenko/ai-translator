@@ -20,14 +20,14 @@ export const TopicManagement: React.FC<TopicManagementProps> = ({
   generatingTopicId,
 }) => {
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 flex-1">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-800">Topics</h2>
       </div>
-      
+
       <AddTopicForm onAdd={addTopic} />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 max-h-[100px] overflow-auto">
         {topics.length === 0 && (
           <p className="text-slate-400 text-sm italic">Topic list is empty</p>
         )}

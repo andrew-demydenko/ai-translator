@@ -69,25 +69,26 @@ export const PracticePage: React.FC = () => {
 
   return (
     <>
-      <PracticeSettings
-        sourceLang={sourceLang}
-        setSourceLang={setSourceLang}
-        targetLang={targetLang}
-        setTargetLang={setTargetLang}
-        selectedLevel={selectedLevel}
-        setSelectedLevel={setSelectedLevel}
-        selectedWordCount={selectedWordCount}
-        setSelectedWordCount={setSelectedWordCount}
-      />
-
-      <TopicManagement
-        topics={topics}
-        addTopic={addTopic}
-        deleteTopic={deleteTopic}
-        onGenerate={handleGenerate}
-        isGenerating={status === "streaming"}
-        generatingTopicId={generatingTopicId}
-      />
+      <div className="flex gap-6">
+        <PracticeSettings
+          sourceLang={sourceLang}
+          setSourceLang={setSourceLang}
+          targetLang={targetLang}
+          setTargetLang={setTargetLang}
+          selectedLevel={selectedLevel}
+          setSelectedLevel={setSelectedLevel}
+          selectedWordCount={selectedWordCount}
+          setSelectedWordCount={setSelectedWordCount}
+        />
+        <TopicManagement
+          topics={topics}
+          addTopic={addTopic}
+          deleteTopic={deleteTopic}
+          onGenerate={handleGenerate}
+          isGenerating={status === "streaming"}
+          generatingTopicId={generatingTopicId}
+        />
+      </div>
 
       <GenerationHistory
         sentences={sentences}
