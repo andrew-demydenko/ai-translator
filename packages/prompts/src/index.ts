@@ -1,52 +1,36 @@
 import { TranslationRequest } from "@ai-translator/shared-types";
+import { practiceSystemPrompt, practiceUserPrompt } from "./templates/practice";
+import {
+  translateSystemPrompt,
+  translateUserPrompt,
+} from "./templates/translate";
 
-export const getSystemPromptTemplate = (req: TranslationRequest) => {
-  return `You are an expert linguist and translator.
-Respond using the following delimited format to allow for real-time streaming:
+type PromptStrategy = {
+  getSystem: (req: TranslationRequest) => string;
+  getUser: (req: TranslationRequest) => string;
+};
 
-[TRANSLATION]
-(primary translation)
+const strategies: Record<string, PromptStrategy> = {
+  practice: {
+    getSystem: practiceSystemPrompt,
+    getUser: practiceUserPrompt,
+  },
+  translate: {
+    getSystem: translateSystemPrompt,
+    getUser: translateUserPrompt,
+  },
+};
 
-[ALTERNATIVES]
-alternative A2 level | alternative B1 level | alternative B2 level | alternative C1 level  alternative C2 level
+const getStrategyKey = (req: TranslationRequest): string => {
+  return req.text.startsWith("GENERATE_TOPIC:") ? "practice" : "translate";
+};
 
-[EXAMPLES]
-source 1 -> translated 1 | source 2 -> translated 2
-
-[FORMALITY]
-(formal/neutral/informal)
-
-[CONFIDENCE]
-number between 0 and 1
-
-[CONTEXT]
-Explain where this phrase can be used
-
-Order of sections:
- 1. [FORMALITY]
- 2. [CONFIDENCE]
- 3. [TRANSLATION]
- 4. [ALTERNATIVES]
- 5. [EXAMPLES]
- 6. [CONTEXT]
-
-IMPORTANT:
-1. Keep the tags exactly as shown (e.g., [TRANSLATION]).
-2. Use "|" to separate items in ALTERNATIVES and EXAMPLES.
-3. Indicate level of each alternative sentence (level).
-4. Use "->" to separate source and translation in EXAMPLES, Number of examples is 3 and level is about 10 words.
-5. Answer [CONTEXT] section in ${req.contextLanguage}.
-`.trim();
+export const getSystemPromptTemplate = (req: TranslationRequest): string => {
+  const key = getStrategyKey(req);
+  return strategies[key].getSystem(req);
 };
 
 export function buildTranslatePrompt(req: TranslationRequest): string {
-  return `
-Translate the following text from ${req.sourceLang} to ${req.targetLang}.
-Mode: ${req.mode}.
-contextLanguage: ${req.contextLanguage}.
-
-Text: "${req.text}"
-
-Provide the JSON response according to the schema.
-`.trim();
+  const key = getStrategyKey(req);
+  return strategies[key].getUser(req);
 }

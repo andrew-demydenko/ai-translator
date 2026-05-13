@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { Header } from "@/widgets/header";
 import { TranslationPage } from "@/pages/translation";
+import { PracticePage } from "@/pages/practice";
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
           <Header />
           <Routes>
             <Route path="/" element={<TranslationPage />} />
+            <Route path="/practice" element={<PracticePage />} />
             <Route path="/:mode" element={<TranslationPage />} />
             {/* Redirect any other unknown routes to standard mode */}
             <Route path="*" element={<Navigate to="/" replace />} />

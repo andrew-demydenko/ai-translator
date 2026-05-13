@@ -2,9 +2,6 @@ import ollama from "ollama";
 import { config } from "../config";
 
 export class OllamaService {
-  /**
-   * Check if Ollama is available
-   */
   async checkHealth() {
     try {
       await ollama.ps();
@@ -14,18 +11,16 @@ export class OllamaService {
     }
   }
 
-  /**
-   * List available models
-   */
   async listModels() {
     const response = await ollama.list();
     return response.models;
   }
 
-  /**
-   * Chat with streaming support
-   */
   async chatStream(messages: { role: string; content: string }[]) {
+    if (!config.ollama.model) {
+      throw new Error("Ollama model not configured");
+    }
+
     return await ollama.chat({
       model: config.ollama.model,
       messages,

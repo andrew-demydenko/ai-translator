@@ -2,12 +2,12 @@ import React, { useEffect, useCallback } from "react";
 import { useParams, NavLink } from "react-router-dom";
 import { clsx } from "clsx";
 import { TranslationRequest } from "@ai-translator/shared-types";
-import { 
-  useTranslationState, 
-  useTranslationConfig, 
-  useTranslationHistory, 
+import {
+  useTranslationState,
+  useTranslationConfig,
+  useTranslationHistory,
   useTranslationResults,
-  TranslationResultSection 
+  TranslationResultSection,
 } from "@/entities/translation";
 import { TranslationForm } from "@/features/translate-text";
 import { ErrorMessage } from "@/shared/ui";
@@ -30,7 +30,6 @@ export const TranslationWidget: React.FC = () => {
     setTargetLang,
     contextLang,
     setContextLang,
-    handleSwapLanguages,
   } = useTranslationConfig(mode);
 
   const {
@@ -102,7 +101,6 @@ export const TranslationWidget: React.FC = () => {
         contextLang={contextLang}
         setContextLang={setContextLang}
         onTranslate={handleTranslate}
-        onSwapLanguages={handleSwapLanguages}
         isStreaming={status === "streaming"}
         history={history}
         onClearHistory={clearHistory}

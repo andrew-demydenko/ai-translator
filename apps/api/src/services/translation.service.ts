@@ -14,7 +14,6 @@ export class TranslationService {
     request: TranslationRequestDTO,
     onEvent: (event: Omit<WSMessage<any>, "requestId">) => void,
   ) {
-    console.log(buildTranslatePrompt(request));
     const stream = await ollamaService.chatStream([
       { role: "system", content: getSystemPromptTemplate(request) },
       { role: "user", content: buildTranslatePrompt(request) },
@@ -53,6 +52,13 @@ export class TranslationService {
     text: string,
     onField: (field: string, value: any, isComplete: boolean) => void,
   ) {
+    // 0. Original (for generation)
+    const originalMatch = text.match(/\[ORIGINAL\]\s*([\s\S]*?)(?=\[|$)/i);
+    if (originalMatch) {
+      const val = originalMatch[1].trim();
+      if (val) onField("originalText", val, text.includes("[TRANSLATION]"));
+    }
+
     // 1. Translation
     const transMatch = text.match(/\[TRANSLATION\]\s*([\s\S]*?)(?=\[|$)/i);
     if (transMatch) {

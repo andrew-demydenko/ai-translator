@@ -1,5 +1,6 @@
 import React from "react";
 import { HistoryPopover } from "../../view-history";
+import { LanguageSelect } from "@/features/language-select";
 
 interface TranslationFormProps {
   text: string;
@@ -11,7 +12,6 @@ interface TranslationFormProps {
   contextLang: "русский" | "english";
   setContextLang: (lang: "русский" | "english") => void;
   onTranslate: () => void;
-  onSwapLanguages: () => void;
   isStreaming: boolean;
   history: { original: string; translated: string }[];
   onClearHistory: () => void;
@@ -27,65 +27,18 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
   contextLang,
   setContextLang,
   onTranslate,
-  onSwapLanguages,
   isStreaming,
   history,
   onClearHistory,
 }) => {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-      <div className="flex gap-4 items-center border-b border-slate-100 pb-4">
-        <div className="flex-1">
-          <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">
-            From
-          </label>
-          <input
-            type="text"
-            placeholder="English"
-            value={sourceLang}
-            onChange={(e) => setSourceLang(e.target.value)}
-            className="w-full border-0 p-0 text-lg font-medium focus:ring-0 placeholder:text-slate-300"
-          />
-        </div>
-
-        <button
-          onClick={onSwapLanguages}
-          className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-blue-600"
-          title="Swap Languages"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m7 21-4-4 4-4" />
-            <path d="M3 17h18" />
-            <path d="m17 3 4 4-4 4" />
-            <path d="M21 7H3" />
-          </svg>
-        </button>
-
-        <div className="flex-1 text-right">
-          <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">
-            To
-          </label>
-          <div className="flex items-center justify-end gap-2">
-            <input
-              type="text"
-              placeholder="Ukrainian"
-              value={targetLang}
-              onChange={(e) => setTargetLang(e.target.value)}
-              className="w-full border-0 p-0 text-lg font-medium focus:ring-0 text-right placeholder:text-slate-300"
-            />
-          </div>
-        </div>
-      </div>
+      <LanguageSelect
+        sourceLang={sourceLang}
+        setSourceLang={setSourceLang}
+        targetLang={targetLang}
+        setTargetLang={setTargetLang}
+      />
 
       <textarea
         onKeyDown={(e) => {

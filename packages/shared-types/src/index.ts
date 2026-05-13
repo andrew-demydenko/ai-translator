@@ -4,6 +4,8 @@ export interface TranslationRequest {
   targetLang: string;
   mode: "standard" | "formal" | "informal" | "technical";
   contextLanguage: string;
+  level?: string;
+  wordCountRange?: string;
 }
 
 export interface SentenceExample {
@@ -13,6 +15,7 @@ export interface SentenceExample {
 
 export interface TranslationResult {
   translation: string;
+  originalText?: string; // For generated sentences
   alternatives: string[]; // 2–4 variants
   examples: SentenceExample[]; // sentences with context
   contextNote: string; // explanation of differences

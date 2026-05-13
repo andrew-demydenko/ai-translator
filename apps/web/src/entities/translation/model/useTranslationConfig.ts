@@ -15,11 +15,6 @@ export const useTranslationConfig = (
     "русский",
   );
 
-  const handleSwapLanguages = () => {
-    setSourceLang(targetLang);
-    setTargetLang(sourceLang);
-  };
-
   return {
     sourceLang,
     setSourceLang,
@@ -29,6 +24,5 @@ export const useTranslationConfig = (
     setMode,
     contextLang,
     setContextLang,
-    handleSwapLanguages,
   };
 };
