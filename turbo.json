@@ -7,14 +7,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "web#build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
-    },
     "api#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["PORT", "OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
+      "env": ["OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
     },
     "api#dev": {
       "cache": false,

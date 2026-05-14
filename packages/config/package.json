@@ -4,5 +4,10 @@
   "private": true,
   "scripts": {
     "build": "echo 'skip build'"
+  },
+  "exports": {
+    "./tsconfig/*": "./tsconfig/*.json",
+    "./eslint/*": "./eslint/*.js",
+    "./tailwind/*": "./tailwind/*.js"
   }
 }
