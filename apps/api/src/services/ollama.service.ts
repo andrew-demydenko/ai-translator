@@ -1,10 +1,23 @@
-import ollama from "ollama";
+import { Ollama } from "ollama";
 import { config } from "../config";
 
 export class OllamaService {
+  private ollama: Ollama;
+
+  constructor() {
+    this.ollama = new Ollama({
+      host: config.ollama.host,
+      ...(config.ollama.apiKey && {
+        headers: {
+          Authorization: `Bearer ${config.ollama.apiKey}`,
+        },
+      }),
+    });
+  }
+
   async checkHealth() {
     try {
-      await ollama.ps();
+      await this.ollama.ps();
       return { status: "ok", connected: true };
     } catch (error) {
       return { status: "error", connected: false, error: String(error) };
@@ -12,7 +25,7 @@ export class OllamaService {
   }
 
   async listModels() {
-    const response = await ollama.list();
+    const response = await this.ollama.list();
     return response.models;
   }
 
@@ -21,7 +34,7 @@ export class OllamaService {
       throw new Error("Ollama model not configured");
     }
 
-    return await ollama.chat({
+    return await this.ollama.chat({
       model: config.ollama.model,
       messages,
       stream: true,

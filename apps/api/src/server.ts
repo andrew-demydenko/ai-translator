@@ -1,4 +1,3 @@
-import "dotenv/config";
 import http from "http";
 import { WebSocketServer } from "ws";
 import { app } from "./app";

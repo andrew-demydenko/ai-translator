@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
+    "types": ["vite/client"],
     "moduleResolution": "bundler",
     "noEmit": true,
     "resolveJsonModule": true,

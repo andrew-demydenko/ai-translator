@@ -9,7 +9,7 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "@ai-translator/shared-types": "*"
+    "@ai-translator/shared-types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

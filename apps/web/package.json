@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ai-translator/shared-types": "*",
+    "@ai-translator/shared-types": "workspace:*",
     "@tanstack/react-query": "^5.24.1",
     "clsx": "^2.1.1",
     "react": "^18.2.0",
@@ -18,7 +18,7 @@
     "zustand": "^4.5.1"
   },
   "devDependencies": {
-    "@ai-translator/config": "*",
+    "@ai-translator/config": "workspace:*",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",

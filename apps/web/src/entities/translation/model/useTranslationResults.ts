@@ -2,11 +2,18 @@ import { useState, useEffect } from "react";
 import { useTranslationSocket } from "../api/useTranslationSocket";
 import { TranslationResult } from "@ai-translator/shared-types";
 
-export const useTranslationResults = (socketUrl: string = "ws://localhost:3001") => {
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+const WS_URL =
+  import.meta.env.VITE_WS_URL || `${protocol}://${window.location.host}`;
+
+export const useTranslationResults = (socketUrl: string = WS_URL) => {
   const [currentTranslation, setCurrentTranslation] = useState<string>("");
-  const [streamedResult, setStreamedResult] = useState<Partial<TranslationResult>>({});
-  
-  const { translate, status, result, fieldUpdates, error } = useTranslationSocket(socketUrl);
+  const [streamedResult, setStreamedResult] = useState<
+    Partial<TranslationResult>
+  >({});
+
+  const { translate, status, result, fieldUpdates, error } =
+    useTranslationSocket(socketUrl);
 
   useEffect(() => {
     if (result) {

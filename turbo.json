@@ -1,16 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [".env"],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
-    "build": {
+    "web#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "api#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["OLLAMA_MODEL", "OLLAMA_HOST"]
+      "env": ["PORT", "OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
     },
-    "dev": {
+    "api#dev": {
       "cache": false,
       "persistent": true,
-      "env": ["OLLAMA_MODEL", "OLLAMA_HOST"]
+      "env": ["OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
+    },
+    "web#dev": {
+      "cache": false,
+      "persistent": true
     },
     "lint": {},
     "type-check": {
