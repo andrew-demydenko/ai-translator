@@ -7,17 +7,23 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "api#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "env": ["OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
     },
     "api#dev": {
+      "dependsOn": ["^dev"],
       "cache": false,
       "persistent": true,
       "env": ["OLLAMA_MODEL", "OLLAMA_HOST", "OLLAMA_API_KEY"]
     },
     "web#dev": {
+      "dependsOn": ["^dev"],
       "cache": false,
       "persistent": true
     },

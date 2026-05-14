@@ -1,6 +1,7 @@
 import {
   buildTranslatePrompt,
   getSystemPromptTemplate,
+  TRANSLATION_FIELDS,
 } from "@ai-translator/prompts";
 import { TranslationRequestDTO } from "../schemas/translation.schema";
 import { ollamaService } from "./ollama.service";
@@ -52,76 +53,48 @@ export class TranslationService {
     text: string,
     onField: (field: string, value: any, isComplete: boolean) => void,
   ) {
-    // 0. Original (for generation)
-    const originalMatch = text.match(/\[ORIGINAL\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (originalMatch) {
-      const val = originalMatch[1].trim();
-      if (val) onField("originalText", val, text.includes("[TRANSLATION]"));
-    }
+    TRANSLATION_FIELDS.forEach((fieldConfig, index) => {
+      const { tag, key } = fieldConfig;
+      const nextField = TRANSLATION_FIELDS[index + 1];
+      const isComplete = nextField ? text.includes(nextField.tag) : true;
 
-    // 1. Translation
-    const transMatch = text.match(/\[TRANSLATION\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (transMatch) {
-      const val = transMatch[1].trim();
-      if (val) onField("translation", val, text.includes("[ALTERNATIVES]"));
-    }
+      // Escape special characters in tag for regex
+      const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = text.match(
+        new RegExp(`${escapedTag}\\s*([\\s\\S]*?)(?=\\[|$)`, "i"),
+      );
 
-    // 2. Alternatives
-    const altMatch = text.match(/\[ALTERNATIVES\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (altMatch) {
-      const val = altMatch[1].trim();
-      if (val) {
-        const items = val
-          .split("|")
-          .map((s) => s.trim())
-          .filter(Boolean);
-        onField("alternatives", items, text.includes("[EXAMPLES]"));
+      if (match) {
+        let val: any = match[1].trim();
+        if (!val) return;
+
+        // Specialized parsing logic per key
+        if (key === "alternatives" || key === "synonyms") {
+          val = val
+            .split("|")
+            .map((s: string) => s.trim())
+            .filter(Boolean);
+        } else if (key === "examples") {
+          val = val
+            .split("|")
+            .map((s: string) => {
+              const parts = s.split("->").map((p) => p.trim());
+              return { source: parts[0] || "", translated: parts[1] || "" };
+            })
+            .filter((item: any) => item.source || item.translated);
+        } else if (key === "confidence") {
+          val = parseFloat(val);
+          if (isNaN(val)) return;
+        } else if (key === "formality") {
+          val = val.toLowerCase();
+          if (!["formal", "neutral", "informal"].includes(val)) {
+            val = "neutral";
+          }
+        }
+
+        onField(key, val, isComplete);
       }
-    }
-
-    // 3. Examples
-    const exMatch = text.match(/\[EXAMPLES\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (exMatch) {
-      const val = exMatch[1].trim();
-      if (val) {
-        const items = val
-          .split("|")
-          .map((s) => {
-            const parts = s.split("->").map((p) => p.trim());
-            return { source: parts[0] || "", translated: parts[1] || "" };
-          })
-          .filter((item) => item.source || item.translated);
-        onField("examples", items, text.includes("[CONTEXT]"));
-      }
-    }
-
-    // 4. Context
-    const ctxMatch = text.match(/\[CONTEXT\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (ctxMatch) {
-      const val = ctxMatch[1].trim();
-      if (val) onField("contextNote", val, text.includes("[FORMALITY]"));
-    }
-
-    // 5. Formality
-    const formMatch = text.match(/\[FORMALITY\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (formMatch) {
-      const val = formMatch[1].trim().toLowerCase();
-      if (val) {
-        const valid = ["formal", "neutral", "informal"].includes(val);
-        onField(
-          "formality",
-          valid ? val : "neutral",
-          text.includes("[CONFIDENCE]"),
-        );
-      }
-    }
-
-    // 6. Confidence
-    const confMatch = text.match(/\[CONFIDENCE\]\s*([\s\S]*?)(?=\[|$)/i);
-    if (confMatch) {
-      const val = parseFloat(confMatch[1].trim());
-      if (!isNaN(val)) onField("confidence", val, true);
-    }
+    });
   }
 
   /**
@@ -135,6 +108,7 @@ export class TranslationService {
       contextNote: "",
       formality: "neutral",
       confidence: 1,
+      synonyms: [],
     };
 
     this.extractFields(content, (field, value) => {

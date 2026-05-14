@@ -20,18 +20,19 @@ ARG VITE_WS_URL
 ENV VITE_WS_URL=$VITE_WS_URL
 
 RUN pnpm turbo run build
+# Use pnpm deploy to build isolated api folder
 RUN pnpm --filter api deploy --prod /app/deployed
 
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Только prod зависимости и собранный код api
+# Only copy the necessary files for the api to run
 COPY --from=builder /app/deployed/dist ./dist
 COPY --from=builder /app/deployed/node_modules ./node_modules
 COPY --from=builder /app/deployed/package.json ./package.json
 
-# Статика фронтенда
+# Static frontend files
 COPY --from=builder /app/apps/web/dist ./web/dist
 
 EXPOSE 3001

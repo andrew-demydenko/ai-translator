@@ -16,6 +16,7 @@ export interface SentenceExample {
 export interface TranslationResult {
   translation: string;
   originalText?: string; // For generated sentences
+  synonyms: string[]; // 2–4 variants
   alternatives: string[]; // 2–4 variants
   examples: SentenceExample[]; // sentences with context
   contextNote: string; // explanation of differences

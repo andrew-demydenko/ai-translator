@@ -17,6 +17,10 @@ export const TranslationResultSection: React.FC<
 > = ({ status, currentTranslation, streamedResult, onReplaceTranslation }) => {
   if (status === "idle" && !currentTranslation) return null;
 
+  const synonyms = streamedResult.synonyms || [];
+  const alternatives = streamedResult.alternatives || [];
+  const examples = streamedResult.examples || [];
+
   return (
     <div className="bg-white py-6 rounded-xl shadow-sm border border-slate-200 space-y-6 flex flex-col min-h-[1px]">
       <div className="flex items-center justify-between border-b border-slate-100 pb-4 px-6">
@@ -56,27 +60,42 @@ export const TranslationResultSection: React.FC<
           )}
         </div>
 
-        {streamedResult.alternatives &&
-          streamedResult.alternatives.length > 0 && (
-            <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Alternatives
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {streamedResult.alternatives.map((alt, i) => (
-                  <AlternativeChip
-                    key={i}
-                    text={alt}
-                    onClick={onReplaceTranslation}
-                  />
-                ))}
-              </div>
+        {alternatives.length && !synonyms.length ? (
+          <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Alternatives
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {alternatives.map((alt, i) => (
+                <AlternativeChip
+                  key={i}
+                  text={alt}
+                  onClick={onReplaceTranslation}
+                />
+              ))}
             </div>
-          )}
+          </div>
+        ) : null}
 
-        {streamedResult.examples && streamedResult.examples.length > 0 && (
+        {synonyms.length > 0 && (
+          <div className="mt-6 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Synonyms
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {synonyms.map((syn, i) => (
+                <div
+                  key={i}
+                  className="text-slate-600"
+                >{`${syn}${synonyms.length > i + 1 ? `,` : "."}`}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {examples.length > 0 && (
           <div className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-1000">
-            <ExamplesSection examples={streamedResult.examples} />
+            <ExamplesSection examples={examples} />
           </div>
         )}
         {streamedResult.contextNote && (
