@@ -16,6 +16,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY --from=pruner /app/out/full/ .
 
+RUN ls packages/config/
+
 # Build variables for Vite
 ARG VITE_WS_URL
 ENV VITE_WS_URL=$VITE_WS_URL

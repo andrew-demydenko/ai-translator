@@ -5,6 +5,11 @@
   "scripts": {
     "build": "echo 'skip build'"
   },
+  "files": [
+    "tsconfig",
+    "eslint",
+    "tailwind"
+  ],
   "exports": {
     "./tsconfig/*": "./tsconfig/*.json",
     "./eslint/*": "./eslint/*.js",
