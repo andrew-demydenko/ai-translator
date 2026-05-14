@@ -3,6 +3,10 @@
   "globalDependencies": [".env"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
     "web#build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
