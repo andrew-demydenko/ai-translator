@@ -9,6 +9,7 @@
     "dev": "tsc -w"
   },
   "devDependencies": {
+    "@ai-translator/config": "workspace:*",
     "typescript": "^5.0.0"
   }
 }

@@ -12,6 +12,7 @@
     "@ai-translator/shared-types": "workspace:*"
   },
   "devDependencies": {
+    "@ai-translator/config": "workspace:*",
     "typescript": "^5.0.0"
   }
 }

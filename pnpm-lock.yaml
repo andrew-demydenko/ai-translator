@@ -42,6 +42,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
+      '@ai-translator/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.19
@@ -121,12 +124,18 @@ importers:
         specifier: workspace:*
         version: link:../shared-types
     devDependencies:
+      '@ai-translator/config':
+        specifier: workspace:*
+        version: link:../config
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
 
   packages/shared-types:
     devDependencies:
+      '@ai-translator/config':
+        specifier: workspace:*
+        version: link:../config
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

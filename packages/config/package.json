@@ -11,8 +11,8 @@
     "tailwind"
   ],
   "exports": {
-    "./tsconfig/*": "./tsconfig/*.json",
-    "./eslint/*": "./eslint/*.js",
-    "./tailwind/*": "./tailwind/*.js"
+    "./tsconfig/*": "./tsconfig/*",
+    "./eslint/*": "./eslint/*",
+    "./tailwind/*": "./tailwind/*"
   }
 }

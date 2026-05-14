@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Express } from "express";
 import cors from "cors";
 import path from "path";
 import { healthCheck } from "./controllers/health.controller";
 import { listModels } from "./controllers/model.controller";
 
-const app = express();
+const app: Express = express();
 
 // Middlewares
 app.use(cors());
