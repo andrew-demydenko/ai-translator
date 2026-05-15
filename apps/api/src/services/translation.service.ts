@@ -4,21 +4,35 @@ import {
   TRANSLATION_FIELDS,
 } from "@ai-translator/prompts";
 import { TranslationRequestDTO } from "../schemas/translation.schema";
-import { ollamaService } from "./ollama.service";
+import { OllamaService, ollamaService } from "./ollama.service";
+import { DeepSeekService, deepseekService } from "./deepseek.service";
 import { WSMessage, FieldUpdatePayload } from "@ai-translator/shared-types";
 
+export type TranslationProvider = OllamaService | DeepSeekService;
+
+const translationProviders: Record<string, TranslationProvider> = {
+  ollama: ollamaService,
+  deepseek: deepseekService,
+};
+export function getTranslationProvider(provider: string) {
+  return translationProviders[provider];
+}
+
 export class TranslationService {
-  /**
-   * Translates text using streaming and emits field updates
-   */
+  provider: TranslationProvider;
+  constructor(provider: TranslationProvider) {
+    this.provider = provider;
+  }
   async translateStream(
     request: TranslationRequestDTO,
     onEvent: (event: Omit<WSMessage<any>, "requestId">) => void,
   ) {
-    const stream = await ollamaService.chatStream([
-      { role: "system", content: getSystemPromptTemplate(request) },
-      { role: "user", content: buildTranslatePrompt(request) },
-    ]);
+    const messages = [
+      { role: "system" as const, content: getSystemPromptTemplate(request) },
+      { role: "user" as const, content: buildTranslatePrompt(request) },
+    ];
+
+    const stream = await this.provider.chatStream(messages);
 
     let fullContent = "";
     const lastEmitted: Record<string, any> = {};
@@ -119,4 +133,4 @@ export class TranslationService {
   }
 }
 
-export const translationService = new TranslationService();
+export default TranslationService;

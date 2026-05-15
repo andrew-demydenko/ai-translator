@@ -1,10 +1,19 @@
 import { WebSocket } from "ws";
 import { WSMessage, TranslationRequest } from "@ai-translator/shared-types";
 import { TranslationRequestSchema } from "../schemas/translation.schema";
-import { translationService } from "../services/translation.service";
+import {
+  TranslationService,
+  getTranslationProvider,
+} from "../services/translation.service";
+import { config } from "../config";
 
 export class WSHandler {
+  private translationService: TranslationService;
+
   constructor(private socket: WebSocket) {
+    this.translationService = new TranslationService(
+      getTranslationProvider(config.provider),
+    );
     this.init();
   }
 
@@ -28,7 +37,7 @@ export class WSHandler {
       const validated = TranslationRequestSchema.parse(msg.payload);
 
       // Perform translation via service
-      const result = await translationService.translateStream(
+      const result = await this.translationService.translateStream(
         validated,
         (event) => {
           this.send({

@@ -6,10 +6,10 @@ export class OllamaService {
 
   constructor() {
     this.ollama = new Ollama({
-      host: config.ollama.host,
-      ...(config.ollama.apiKey && {
+      host: config.host,
+      ...(config.apiKey && {
         headers: {
-          Authorization: `Bearer ${config.ollama.apiKey}`,
+          Authorization: `Bearer ${config.apiKey}`,
         },
       }),
     });
@@ -30,12 +30,12 @@ export class OllamaService {
   }
 
   async chatStream(messages: { role: string; content: string }[]) {
-    if (!config.ollama.model) {
+    if (!config.model) {
       throw new Error("Ollama model not configured");
     }
 
     return await this.ollama.chat({
-      model: config.ollama.model,
+      model: config.model,
       messages,
       stream: true,
     });

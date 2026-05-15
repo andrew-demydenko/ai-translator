@@ -28,18 +28,22 @@ export const useTranslationHistory = () => {
 
     setHistory((prev) => {
       // Avoid duplicates if the same thing is translated consecutively
-      if (prev.length > 0 && prev[0].original === original) {
+      if (
+        prev.length > 0 &&
+        prev.some(
+          (entry: HistoryEntry) =>
+            entry.original === original && entry.translated === translated,
+        )
+      ) {
         return prev;
       }
-      
+
       const newEntry = { original, translated };
+      console.log("newEntry", newEntry);
       const updatedHistory = [newEntry, ...prev].slice(0, MAX_HISTORY_ITEMS);
-      
-      localStorage.setItem(
-        HISTORY_STORAGE_KEY,
-        JSON.stringify(updatedHistory),
-      );
-      
+
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(updatedHistory));
+
       return updatedHistory;
     });
   }, []);

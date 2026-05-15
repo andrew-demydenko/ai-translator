@@ -61,7 +61,7 @@ export const TranslationWidget: React.FC = () => {
     if (result) {
       addToHistory(text, result.translation);
     }
-  }, [result, addToHistory, text]);
+  }, [result, addToHistory]);
 
   const handleReplaceTranslation = useCallback(
     (newText: string) => {
