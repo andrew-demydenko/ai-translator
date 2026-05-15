@@ -1,10 +1,12 @@
 import { Ollama } from "ollama";
-import { config } from "../config";
+import { TranslationProvider, ProviderConfig } from "./types";
 
-export class OllamaService {
+export class OllamaService implements TranslationProvider {
   private ollama: Ollama;
+  private config: ProviderConfig;
 
-  constructor() {
+  constructor(config: ProviderConfig) {
+    this.config = config;
     this.ollama = new Ollama({
       host: config.host,
       ...(config.apiKey && {
@@ -26,20 +28,23 @@ export class OllamaService {
 
   async listModels() {
     const response = await this.ollama.list();
-    return response.models;
+    return response.models.map((m) => ({
+      id: m.model,
+      name: m.name,
+    }));
   }
 
-  async chatStream(messages: { role: string; content: string }[]) {
-    if (!config.model) {
+  async chatStream(
+    messages: { role: "system" | "user" | "assistant"; content: string }[],
+  ) {
+    if (!this.config.model) {
       throw new Error("Ollama model not configured");
     }
 
-    return await this.ollama.chat({
-      model: config.model,
+    return this.ollama.chat({
+      model: this.config.model,
       messages,
       stream: true,
     });
   }
 }
-
-export const ollamaService = new OllamaService();

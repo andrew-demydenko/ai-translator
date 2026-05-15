@@ -28,11 +28,10 @@ export const getStrategyKey = (req: TranslationRequest): string => {
 
 export const getSystemPromptTemplate = (req: TranslationRequest): string => {
   const key = getStrategyKey(req);
-  console.log(key);
   return strategies[key].getSystem(req);
 };
 
-export function buildTranslatePrompt(req: TranslationRequest): string {
+export function buildPrompt(req: TranslationRequest): string {
   const key = getStrategyKey(req);
   return strategies[key].getUser(req);
 }

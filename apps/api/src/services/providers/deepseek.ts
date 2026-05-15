@@ -1,15 +1,17 @@
 import OpenAI from "openai";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources/chat/completions";
-import { config } from "../config";
+import { TranslationProvider, ProviderConfig } from "./types";
 
 type DeepSeekChatParams = ChatCompletionCreateParamsStreaming & {
   thinking?: { type: "enabled" | "disabled" };
 };
 
-export class DeepSeekService {
+export class DeepSeekService implements TranslationProvider {
   private provider: OpenAI;
+  private config: ProviderConfig;
 
-  constructor() {
+  constructor(config: ProviderConfig) {
+    this.config = config;
     this.provider = new OpenAI({
       baseURL: config.host,
       apiKey: config.apiKey,
@@ -18,9 +20,7 @@ export class DeepSeekService {
 
   async checkHealth() {
     try {
-      // Simple check to see if we can reach the API
-      // Note: DeepSeek might not have a /health endpoint, so we just check if the client is initialized
-      if (!config.apiKey) {
+      if (!this.config.apiKey) {
         throw new Error("Provider API key not configured");
       }
       return { status: "ok", connected: true };
@@ -30,31 +30,33 @@ export class DeepSeekService {
   }
 
   async listModels() {
-    const list = await this.provider.models.list();
-    return list;
+    const page = await this.provider.models.list();
+    return page.data.map((m) => ({
+      id: m.id,
+      name: m.id,
+      owned_by: m.owned_by,
+    }));
   }
 
   async chatStream(
     messages: { role: "system" | "user" | "assistant"; content: string }[],
   ) {
-    if (!config.apiKey) {
+    if (!this.config.apiKey) {
       throw new Error("Provider API key not configured");
     }
 
-    if (!config.model) {
+    if (!this.config.model) {
       throw new Error("Provider model not configured");
     }
 
     const params: DeepSeekChatParams = {
-      model: config.model,
+      model: this.config.model,
       messages,
       stream: true,
       thinking: { type: "disabled" },
     };
     const response = await this.provider.chat.completions.create(params);
 
-    // Adapt OpenAI stream to match the expected format in TranslationService
-    // TranslationService expects an async iterable that yields { message: { content: string } }
     return (async function* () {
       for await (const chunk of response) {
         const content = chunk?.choices[0]?.delta?.content || "";
@@ -65,5 +67,3 @@ export class DeepSeekService {
     })();
   }
 }
-
-export const deepseekService = new DeepSeekService();

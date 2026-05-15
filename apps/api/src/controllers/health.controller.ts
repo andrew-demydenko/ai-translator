@@ -1,15 +1,9 @@
 import { Request, Response } from "express";
-import { ollamaService } from "../services/ollama.service";
-import { deepseekService } from "../services/deepseek.service";
-import { config } from "../config";
+import { config, getProviderConfig } from "../config";
+import { getTranslationProvider } from "../services/providers";
 
-export const healthCheck = async (req: Request, res: Response) => {
-  try {
-    const status = config.provider === "deepseek" 
-      ? await deepseekService.checkHealth()
-      : await ollamaService.checkHealth();
-    res.json(status);
-  } catch (error) {
-    res.status(500).json({ status: "error", error: String(error) });
-  }
+export const healthCheck = async (_req: Request, res: Response) => {
+  const provider = getTranslationProvider(config.provider, getProviderConfig());
+  const status = await provider.checkHealth();
+  res.json(status);
 };

@@ -8,30 +8,25 @@ import {
   PracticeRequestSchema,
   PracticeRequestDTO,
 } from "../schemas/practice.schema";
-import {
-  TranslationService,
-  getTranslationProvider,
-} from "../services/translation.service";
-import { config } from "../config";
+import { LLMService } from "../services/llm";
+import { logger } from "../middleware/logger";
 
 export class WSHandler {
-  private translationService: TranslationService;
-
-  constructor(private socket: WebSocket) {
-    this.translationService = new TranslationService(
-      getTranslationProvider(config.provider),
-    );
+  constructor(
+    private socket: WebSocket,
+    private llmService: LLMService,
+  ) {
     this.init();
   }
 
   private init() {
     this.socket.on("message", (data) => this.handleMessage(data));
     this.socket.on("close", (code, reason) => {
-      console.log(
-        `WS connection closed. Code: ${code}, Reason: ${reason || "none"}`,
-      );
+      logger.info("WS connection closed", { code, reason: reason || "none" });
     });
-    this.socket.on("error", (err) => console.error("WS socket error:", err));
+    this.socket.on("error", (err) =>
+      logger.error("WS socket error", { error: err.message }),
+    );
   }
 
   private validateRequest(payload: {
@@ -48,36 +43,36 @@ export class WSHandler {
   }
 
   private async handleMessage(raw: any) {
+    let requestId = "unknown";
+
     try {
       const msg: WSMessage<TranslationRequest> = JSON.parse(raw.toString());
+      requestId = msg.requestId;
 
       if (msg.type !== "translate") return;
 
-      // Validate payload
       const validated = this.validateRequest(msg.payload);
 
-      // Perform translation via service
-      const result = await this.translationService.translateStream(
+      const result = await this.llmService.generateStream(
         validated,
         (event) => {
           this.send({
             ...event,
-            requestId: msg.requestId,
+            requestId,
           } as WSMessage<any>);
         },
       );
 
-      // Send final result
       this.send({
         type: "done",
-        requestId: msg.requestId,
+        requestId,
         payload: result,
       });
     } catch (error: any) {
-      console.error("WS Handler Error:", error);
+      logger.error("WS handler error", { requestId, error: error.message });
       this.send({
         type: "error",
-        requestId: "unknown",
+        requestId,
         payload: error instanceof Error ? error.message : String(error),
       });
     }

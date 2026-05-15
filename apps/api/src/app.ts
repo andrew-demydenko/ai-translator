@@ -1,28 +1,27 @@
 import express, { Express } from "express";
 import cors from "cors";
 import path from "path";
-import { healthCheck } from "./controllers/health.controller";
-import { listModels } from "./controllers/model.controller";
+import { healthRouter, modelRouter } from "./routes";
+import { errorHandler } from "./middleware/error-handler";
 
 const app: Express = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// REST Routes
-app.get("/api/health", healthCheck);
-app.get("/api/models", listModels);
+app.use("/api", healthRouter);
+app.use("/api", modelRouter);
 
-// Serve static files in production
 if (process.env.NODE_ENV === "production") {
   const staticPath = path.join(process.cwd(), "web/dist");
 
   app.use(express.static(staticPath));
 
-  app.get("*", (req, res) => {
+  app.get("*", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 }
+
+app.use(errorHandler);
 
 export { app };
