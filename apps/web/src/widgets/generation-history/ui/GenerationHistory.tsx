@@ -1,17 +1,16 @@
 import React from "react";
-import { GeneratedSentence, SentenceCard } from "@/entities/sentence";
+import { SentenceCard } from "@/entities/sentence";
+import { useSentencesStore } from "@/entities/sentence";
 
-interface GenerationHistoryProps {
-  sentences: GeneratedSentence[];
-  deleteSentence: (id: string) => void;
-  clearAllSentences: () => void;
-}
+export const GenerationHistory: React.FC = () => {
+  const { sentences, deleteSentence, clearAllSentences } = useSentencesStore(
+    (s) => ({
+      sentences: s.sentences,
+      deleteSentence: s.deleteSentence,
+      clearAllSentences: s.clearAllSentences,
+    }),
+  );
 
-export const GenerationHistory: React.FC<GenerationHistoryProps> = ({
-  sentences,
-  deleteSentence,
-  clearAllSentences,
-}) => {
   return (
     <section className="space-y-4 flex min-h-[1px] flex-col">
       <div className="flex items-center justify-between">

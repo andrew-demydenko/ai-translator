@@ -1,79 +1,48 @@
-import React, { useEffect, useCallback } from "react";
-import { useParams, NavLink } from "react-router-dom";
-import { clsx } from "clsx";
+import React, { useEffect } from "react";
+import { NavLink, useParams } from "react-router-dom";
 import { TranslationRequest } from "@ai-translator/shared-types";
+import { clsx } from "clsx";
 import {
-  useTranslationState,
-  useTranslationConfig,
-  useTranslationHistory,
-  useTranslationResults,
+  useTranslationStore,
+  TRANSLATION_MODES,
   TranslationResultSection,
+  useTranslationConfig,
+  useTranslationInput,
+  useTranslationHistory,
 } from "@/entities/translation";
-import { TranslationForm } from "@/features/translate-text";
+import {
+  TranslationForm,
+  useTranslationSync,
+  useTranslateTextResult,
+} from "@/features/translate-text";
 import { ErrorMessage } from "@/shared/ui";
-
-export const modes: TranslationRequest["mode"][] = [
-  "standard",
-  "formal",
-  "informal",
-  "technical",
-];
 
 export const TranslationWidget: React.FC = () => {
   const { mode: modeParam } = useParams<{ mode?: string }>();
-  const mode = (modeParam as TranslationRequest["mode"]) || "standard";
-
+  const setMode = useTranslationStore((s) => s.setMode);
+  useTranslationSync();
+  const { sourceLang, targetLang, contextLang, setConfig } =
+    useTranslationConfig();
+  const { text, setText } = useTranslationInput();
   const {
-    sourceLang,
-    setSourceLang,
-    targetLang,
-    setTargetLang,
-    contextLang,
-    setContextLang,
-  } = useTranslationConfig(mode);
-
-  const {
-    currentTranslation,
-    setCurrentTranslation,
-    streamedResult,
     status,
     error,
-    translate,
-    result,
-    resetResults,
-  } = useTranslationResults();
+    currentTranslation,
+    replaceTranslation,
+    streamedResult,
+  } = useTranslateTextResult();
+  const { history, clearHistory } = useTranslationHistory();
+  const handleTranslate = useTranslationStore((s) => s.handleTranslate);
 
-  const { history, addToHistory, clearHistory } = useTranslationHistory();
-
-  const { text, setText, handleTranslate } = useTranslationState({
-    sourceLang,
-    setSourceLang,
-    targetLang,
-    setTargetLang,
-    mode,
-    contextLang,
-    translate,
-    resetResults,
-  });
-
-  // Handle history updates when translation is finished
   useEffect(() => {
-    if (result) {
-      addToHistory(text, result.translation);
-    }
-  }, [result, addToHistory]);
-
-  const handleReplaceTranslation = useCallback(
-    (newText: string) => {
-      setCurrentTranslation(newText);
-    },
-    [setCurrentTranslation],
-  );
+    const next = modeParam as TranslationRequest["mode"];
+    setMode(TRANSLATION_MODES.includes(next) ? next : "standard");
+  }, [modeParam]);
 
   return (
     <div className="space-y-6 flex flex-col min-h-[1px]">
       <nav className="flex gap-2">
-        {modes.map((m) => (
+        {TRANSLATION_MODES.map((m) => (
           <NavLink
             key={m}
             to={m === "standard" ? "/" : `/${m}`}
@@ -95,11 +64,9 @@ export const TranslationWidget: React.FC = () => {
         text={text}
         setText={setText}
         sourceLang={sourceLang}
-        setSourceLang={setSourceLang}
         targetLang={targetLang}
-        setTargetLang={setTargetLang}
         contextLang={contextLang}
-        setContextLang={setContextLang}
+        onConfigChange={setConfig}
         onTranslate={handleTranslate}
         isStreaming={status === "streaming"}
         history={history}
@@ -112,7 +79,7 @@ export const TranslationWidget: React.FC = () => {
         status={status}
         currentTranslation={currentTranslation}
         streamedResult={streamedResult}
-        onReplaceTranslation={handleReplaceTranslation}
+        onReplaceTranslation={replaceTranslation}
       />
     </div>
   );

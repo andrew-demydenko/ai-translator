@@ -1,24 +1,21 @@
 import React from "react";
 import { Topic, TopicChip } from "@/entities/topic";
 import { AddTopicForm } from "@/features/add-topic";
+import { useTopicStore } from "@/entities/topic";
 
 interface TopicManagementProps {
-  topics: Topic[];
-  addTopic: (name: string) => void;
-  deleteTopic: (id: string) => void;
   onGenerate: (topic: Topic) => void;
   isGenerating: boolean;
   generatingTopicId: string | null;
 }
 
 export const TopicManagement: React.FC<TopicManagementProps> = ({
-  topics,
-  addTopic,
-  deleteTopic,
   onGenerate,
   isGenerating,
   generatingTopicId,
 }) => {
+  const { topics, addTopic, deleteTopic } = useTopicStore();
+
   return (
     <section className="space-y-4 flex-1">
       <div className="flex items-center justify-between">

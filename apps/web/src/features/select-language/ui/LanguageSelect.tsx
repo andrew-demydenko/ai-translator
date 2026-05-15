@@ -3,18 +3,16 @@ import { clsx } from "clsx";
 
 interface LanguageSelectProps {
   sourceLang: string;
-  setSourceLang: (lang: string) => void;
   targetLang: string;
-  setTargetLang: (lang: string) => void;
+  onConfigChange: (config: { sourceLang?: string; targetLang?: string }) => void;
   className?: string;
   swapClassName?: string;
 }
 
 export const LanguageSelect: React.FC<LanguageSelectProps> = ({
   sourceLang,
-  setSourceLang,
   targetLang,
-  setTargetLang,
+  onConfigChange,
   swapClassName,
   className,
 }) => {
@@ -33,15 +31,14 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
           type="text"
           placeholder="English"
           value={sourceLang}
-          onChange={(e) => setSourceLang(e.target.value)}
+          onChange={(e) => onConfigChange({ sourceLang: e.target.value })}
           className="w-full border-0 p-0 text-lg font-medium focus:ring-0 placeholder:text-slate-300 bg-transparent"
         />
       </div>
 
       <button
         onClick={() => {
-          setSourceLang(targetLang);
-          setTargetLang(sourceLang);
+          onConfigChange({ sourceLang: targetLang, targetLang: sourceLang });
         }}
         className={clsx(
           "p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-blue-600",
@@ -76,7 +73,7 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
             type="text"
             placeholder="Ukrainian"
             value={targetLang}
-            onChange={(e) => setTargetLang(e.target.value)}
+            onChange={(e) => onConfigChange({ targetLang: e.target.value })}
             className="w-full border-0 p-0 text-lg font-medium focus:ring-0 text-right placeholder:text-slate-300 bg-transparent"
           />
         </div>

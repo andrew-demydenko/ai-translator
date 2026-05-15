@@ -2,8 +2,10 @@ import {
   buildTranslatePrompt,
   getSystemPromptTemplate,
   TRANSLATION_FIELDS,
+  PRACTICE_FIELDS,
 } from "@ai-translator/prompts";
 import { TranslationRequestDTO } from "../schemas/translation.schema";
+import { PracticeRequestDTO } from "../schemas/practice.schema";
 import { OllamaService, ollamaService } from "./ollama.service";
 import { DeepSeekService, deepseekService } from "./deepseek.service";
 import { WSMessage, FieldUpdatePayload } from "@ai-translator/shared-types";
@@ -14,17 +16,21 @@ const translationProviders: Record<string, TranslationProvider> = {
   ollama: ollamaService,
   deepseek: deepseekService,
 };
+
 export function getTranslationProvider(provider: string) {
   return translationProviders[provider];
 }
+
+type FieldConfig = { tag: string; key: string };
 
 export class TranslationService {
   provider: TranslationProvider;
   constructor(provider: TranslationProvider) {
     this.provider = provider;
   }
+
   async translateStream(
-    request: TranslationRequestDTO,
+    request: TranslationRequestDTO | PracticeRequestDTO,
     onEvent: (event: Omit<WSMessage<any>, "requestId">) => void,
   ) {
     const messages = [
@@ -36,16 +42,18 @@ export class TranslationService {
 
     let fullContent = "";
     const lastEmitted: Record<string, any> = {};
+    const fields =
+      request.generationType === "practice"
+        ? PRACTICE_FIELDS
+        : TRANSLATION_FIELDS;
 
     for await (const chunk of stream) {
       const content = chunk.message.content;
       fullContent += content;
 
-      // Always send the raw chunk for backward compatibility or debugging
       onEvent({ type: "chunk", payload: content });
 
-      // Try to extract fields and emit updates
-      this.extractFields(fullContent, (field, value, isComplete) => {
+      this.extractFields(fullContent, fields, (field, value, isComplete) => {
         const valueStr = JSON.stringify(value);
         if (lastEmitted[field] !== valueStr) {
           lastEmitted[field] = valueStr;
@@ -57,22 +65,19 @@ export class TranslationService {
       });
     }
 
-    return this.parseTranslationResult(fullContent);
+    return this.parseResult(fullContent, request);
   }
 
-  /**
-   * Extracts fields from partial response string using delimited format
-   */
   private extractFields(
     text: string,
+    fields: readonly FieldConfig[],
     onField: (field: string, value: any, isComplete: boolean) => void,
   ) {
-    TRANSLATION_FIELDS.forEach((fieldConfig, index) => {
+    fields.forEach((fieldConfig, index) => {
       const { tag, key } = fieldConfig;
-      const nextField = TRANSLATION_FIELDS[index + 1];
+      const nextField = fields[index + 1];
       const isComplete = nextField ? text.includes(nextField.tag) : true;
 
-      // Escape special characters in tag for regex
       const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const match = text.match(
         new RegExp(`${escapedTag}\\s*([\\s\\S]*?)(?=\\[|$)`, "i"),
@@ -82,7 +87,6 @@ export class TranslationService {
         let val: any = match[1].trim();
         if (!val) return;
 
-        // Specialized parsing logic per key
         if (key === "alternatives" || key === "synonyms") {
           val = val
             .split("|")
@@ -111,11 +115,8 @@ export class TranslationService {
     });
   }
 
-  /**
-   * Parses the raw LLM response in delimited format
-   */
   private parseTranslationResult(content: string) {
-    const result: any = {
+    const result: Record<string, any> = {
       translation: "",
       alternatives: [],
       examples: [],
@@ -125,11 +126,35 @@ export class TranslationService {
       synonyms: [],
     };
 
-    this.extractFields(content, (field, value) => {
+    this.extractFields(content, TRANSLATION_FIELDS, (field, value) => {
       result[field] = value;
     });
 
     return result;
+  }
+
+  private parsePracticeResult(content: string) {
+    const result: Record<string, any> = {
+      original: "",
+      translation: "",
+    };
+
+    this.extractFields(content, PRACTICE_FIELDS, (field, value) => {
+      result[field] = value;
+    });
+
+    return result;
+  }
+
+  private parseResult(
+    content: string,
+    request: TranslationRequestDTO | PracticeRequestDTO,
+  ) {
+    if (request.generationType === "practice") {
+      return this.parsePracticeResult(content);
+    } else if (request.generationType === "translation") {
+      return this.parseTranslationResult(content);
+    }
   }
 }
 

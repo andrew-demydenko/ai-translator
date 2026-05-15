@@ -1,6 +1,13 @@
 import { WebSocket } from "ws";
 import { WSMessage, TranslationRequest } from "@ai-translator/shared-types";
-import { TranslationRequestSchema } from "../schemas/translation.schema";
+import {
+  TranslationRequestSchema,
+  TranslationRequestDTO,
+} from "../schemas/translation.schema";
+import {
+  PracticeRequestSchema,
+  PracticeRequestDTO,
+} from "../schemas/practice.schema";
 import {
   TranslationService,
   getTranslationProvider,
@@ -27,6 +34,19 @@ export class WSHandler {
     this.socket.on("error", (err) => console.error("WS socket error:", err));
   }
 
+  private validateRequest(payload: {
+    generationType: string;
+  }): TranslationRequestDTO | PracticeRequestDTO {
+    switch (payload.generationType) {
+      case "practice":
+        return PracticeRequestSchema.parse(payload);
+      case "translation":
+        return TranslationRequestSchema.parse(payload);
+      default:
+        throw new Error(`Unknown generationType: ${payload.generationType}`);
+    }
+  }
+
   private async handleMessage(raw: any) {
     try {
       const msg: WSMessage<TranslationRequest> = JSON.parse(raw.toString());
@@ -34,7 +54,7 @@ export class WSHandler {
       if (msg.type !== "translate") return;
 
       // Validate payload
-      const validated = TranslationRequestSchema.parse(msg.payload);
+      const validated = this.validateRequest(msg.payload);
 
       // Perform translation via service
       const result = await this.translationService.translateStream(

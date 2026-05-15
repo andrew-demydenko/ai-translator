@@ -1,35 +1,33 @@
 import React from "react";
-import { LEVELS, WORD_COUNT_RANGES } from "@/entities/sentence";
-import { LanguageSelect } from "@/features/language-select";
+import { LEVELS, WORD_COUNT_RANGES, Level } from "@/entities/sentence";
+import { LanguageSelect } from "@/features/select-language";
+import { useTranslationStore } from "@/entities/translation";
+import { useSentencesStore } from "@/entities/sentence";
 
-interface PracticeSettingsProps {
-  sourceLang: string;
-  setSourceLang: (lang: string) => void;
-  targetLang: string;
-  setTargetLang: (lang: string) => void;
-  selectedLevel: string;
-  setSelectedLevel: (level: string) => void;
-  selectedWordCount: string;
-  setSelectedWordCount: (range: string) => void;
-}
+export const PracticeSettings: React.FC = () => {
+  const {
+    selectedLevel,
+    setSelectedLevel,
+    selectedWordCount,
+    setSelectedWordCount,
+  } = useSentencesStore((s) => ({
+    selectedLevel: s.selectedLevel,
+    setSelectedLevel: s.setSelectedLevel,
+    selectedWordCount: s.selectedWordCount,
+    setSelectedWordCount: s.setSelectedWordCount,
+  }));
+  const { sourceLang, targetLang, setConfig } = useTranslationStore((s) => ({
+    sourceLang: s.sourceLang,
+    targetLang: s.targetLang,
+    setConfig: s.setConfig,
+  }));
 
-export const PracticeSettings: React.FC<PracticeSettingsProps> = ({
-  sourceLang,
-  setSourceLang,
-  targetLang,
-  setTargetLang,
-  selectedLevel,
-  setSelectedLevel,
-  selectedWordCount,
-  setSelectedWordCount,
-}) => {
   return (
     <section className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 w-[350px]">
       <LanguageSelect
         sourceLang={sourceLang}
-        setSourceLang={setSourceLang}
         targetLang={targetLang}
-        setTargetLang={setTargetLang}
+        onConfigChange={setConfig}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -39,7 +37,7 @@ export const PracticeSettings: React.FC<PracticeSettingsProps> = ({
           </label>
           <select
             value={selectedLevel}
-            onChange={(e) => setSelectedLevel(e.target.value)}
+            onChange={(e) => setSelectedLevel(e.target.value as Level)}
             className="w-full bg-slate-50 border-0 rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
           >
             {LEVELS.map((level) => (

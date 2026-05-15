@@ -1,16 +1,18 @@
 import React from "react";
-import { HistoryPopover } from "../../view-history";
-import { LanguageSelect } from "@/features/language-select";
+import { HistoryPopover } from "@/features/view-history";
+import { LanguageSelect } from "@/features/select-language";
 
 interface TranslationFormProps {
   text: string;
   setText: (text: string) => void;
   sourceLang: string;
-  setSourceLang: (lang: string) => void;
   targetLang: string;
-  setTargetLang: (lang: string) => void;
   contextLang: "русский" | "english";
-  setContextLang: (lang: "русский" | "english") => void;
+  onConfigChange: (config: {
+    sourceLang?: string;
+    targetLang?: string;
+    contextLang?: "русский" | "english";
+  }) => void;
   onTranslate: () => void;
   isStreaming: boolean;
   history: { original: string; translated: string }[];
@@ -21,11 +23,9 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
   text,
   setText,
   sourceLang,
-  setSourceLang,
   targetLang,
-  setTargetLang,
   contextLang,
-  setContextLang,
+  onConfigChange,
   onTranslate,
   isStreaming,
   history,
@@ -35,9 +35,8 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
       <LanguageSelect
         sourceLang={sourceLang}
-        setSourceLang={setSourceLang}
         targetLang={targetLang}
-        setTargetLang={setTargetLang}
+        onConfigChange={onConfigChange}
       />
 
       <textarea
@@ -63,7 +62,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
               Explanations Language:
             </label>
             <button
-              onClick={() => setContextLang("english")}
+              onClick={() => onConfigChange({ contextLang: "english" })}
               disabled={contextLang === "english"}
               className="border border-gray-600 text-slate-600 px-3 py-1 text-sm rounded-md disabled:bg-gray-200 hover:bg-gray-100 transition-all shadow-lg shadow-gray-200"
             >
@@ -71,7 +70,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
             </button>
             <button
               disabled={contextLang === "русский"}
-              onClick={() => setContextLang("русский")}
+              onClick={() => onConfigChange({ contextLang: "русский" })}
               className="border border-gray-600 text-slate-600 px-3 py-1 text-sm rounded-md disabled:bg-gray-200 hover:bg-gray-100 transition-all shadow-lg shadow-gray-200"
             >
               Рус

@@ -16,18 +16,19 @@ const strategies: Record<string, PromptStrategy> = {
     getSystem: practiceSystemPrompt,
     getUser: practiceUserPrompt,
   },
-  translate: {
+  translation: {
     getSystem: translateSystemPrompt,
     getUser: translateUserPrompt,
   },
 };
 
-const getStrategyKey = (req: TranslationRequest): string => {
-  return req.text.startsWith("GENERATE_TOPIC:") ? "practice" : "translate";
+export const getStrategyKey = (req: TranslationRequest): string => {
+  return req.generationType;
 };
 
 export const getSystemPromptTemplate = (req: TranslationRequest): string => {
   const key = getStrategyKey(req);
+  console.log(key);
   return strategies[key].getSystem(req);
 };
 

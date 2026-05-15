@@ -2,10 +2,11 @@ export interface TranslationRequest {
   text: string;
   sourceLang: string;
   targetLang: string;
-  mode: "standard" | "formal" | "informal" | "technical";
-  contextLanguage: string;
+  mode?: "standard" | "formal" | "informal" | "technical";
+  contextLanguage?: string;
   level?: string;
   wordCountRange?: string;
+  generationType: "practice" | "translation";
 }
 
 export interface SentenceExample {
@@ -15,7 +16,6 @@ export interface SentenceExample {
 
 export interface TranslationResult {
   translation: string;
-  originalText?: string; // For generated sentences
   synonyms: string[]; // 2–4 variants
   alternatives: string[]; // 2–4 variants
   examples: SentenceExample[]; // sentences with context
@@ -23,6 +23,20 @@ export interface TranslationResult {
   formality: "formal" | "neutral" | "informal";
   confidence: number;
 }
+
+export interface PracticeResult {
+  original: string;
+  translation: string;
+}
+
+export type GenerationMode = keyof ResultTypeMap;
+
+interface ResultTypeMap {
+  translation: TranslationResult;
+  practice: PracticeResult;
+}
+
+export type ResultByType<T extends keyof ResultTypeMap> = ResultTypeMap[T];
 
 export interface WSMessage<T = unknown> {
   type: "translate" | "chunk" | "done" | "error" | "field_update";
