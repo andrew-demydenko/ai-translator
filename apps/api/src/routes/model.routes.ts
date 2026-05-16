@@ -2,7 +2,7 @@ import { Router } from "express";
 import { listModels } from "../controllers/model.controller";
 import { asyncHandler } from "../middleware/async-handler";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/models", asyncHandler(listModels));
 
