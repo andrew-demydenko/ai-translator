@@ -45,7 +45,7 @@ export const TranslationWidget: React.FC = () => {
         {TRANSLATION_MODES.map((m) => (
           <NavLink
             key={m}
-            to={m === "standard" ? "/" : `/${m}`}
+            to={`/translate/${m}`}
             className={({ isActive }) =>
               clsx(
                 "px-3 py-1 rounded-md text-sm font-semibold capitalize transition-all",

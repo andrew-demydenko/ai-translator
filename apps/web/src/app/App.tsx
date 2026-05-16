@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  redirect,
 } from "react-router-dom";
 import { Header } from "@/widgets/header";
 import { TranslationPage } from "@/pages/translation";
@@ -16,11 +17,14 @@ const App: React.FC = () => {
         <div className="flex-1 max-w-4xl mx-auto space-y-6 w-full flex flex-col min-h-[1px]">
           <Header />
           <Routes>
-            <Route path="/" element={<TranslationPage />} />
             <Route path="/practice" element={<PracticePage />} />
-            <Route path="/:mode" element={<TranslationPage />} />
+            <Route path="/translate/:mode" element={<TranslationPage />} />
             {/* Redirect any other unknown routes to standard mode */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+
+            <Route
+              path="*"
+              element={<Navigate to="/translate/standard" replace />}
+            />
           </Routes>
         </div>
       </div>
