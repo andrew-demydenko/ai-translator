@@ -282,6 +282,14 @@ class GenerationSocket {
     this.wsRef = null;
     this.listeners.clear();
   }
+
+  reconnect(): void {
+    if (this.cleanupTimeout) clearTimeout(this.cleanupTimeout);
+    this.wsRef?.close();
+    this.wsRef = null;
+    this.reconnectAttempts = 0;
+    this.connect();
+  }
 }
 
 let instance: GenerationSocket | null = null;
@@ -327,4 +335,8 @@ export function useGenerationSocket<T extends GenerationMode>(type: T) {
 export function cleanupGenerationSocket(): void {
   instance?.cleanup();
   instance = null;
+}
+
+export function reconnectGenerationSocket(): void {
+  instance?.reconnect();
 }

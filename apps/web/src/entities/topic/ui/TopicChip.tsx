@@ -8,6 +8,7 @@ interface TopicChipProps {
   onDelete: (id: string) => void;
   isGenerating: boolean;
   isThisTopicGenerating: boolean;
+  isBackendReady: boolean;
 }
 
 export const TopicChip: React.FC<TopicChipProps> = ({
@@ -16,12 +17,13 @@ export const TopicChip: React.FC<TopicChipProps> = ({
   onDelete,
   isGenerating,
   isThisTopicGenerating,
+  isBackendReady,
 }) => {
   return (
     <div className="group relative flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden transition-all hover:border-blue-300">
       <button
         onClick={() => onGenerate(topic)}
-        disabled={isGenerating}
+        disabled={isGenerating || !isBackendReady}
         className="flex items-center px-4 py-2 text-sm font-medium text-slate-700 hover:bg-blue-50 transition-colors disabled:opacity-50"
       >
         {topic.name}

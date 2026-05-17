@@ -15,6 +15,7 @@ interface TranslationFormProps {
   }) => void;
   onTranslate: () => void;
   isStreaming: boolean;
+  isBackendReady: boolean;
   history: { original: string; translated: string }[];
   onClearHistory: () => void;
 }
@@ -28,6 +29,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
   onConfigChange,
   onTranslate,
   isStreaming,
+  isBackendReady,
   history,
   onClearHistory,
 }) => {
@@ -41,7 +43,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
 
       <textarea
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === "Enter" && isBackendReady) {
             e.preventDefault();
             onTranslate();
           }
@@ -81,7 +83,7 @@ export const TranslationForm: React.FC<TranslationFormProps> = ({
 
         <button
           onClick={onTranslate}
-          disabled={isStreaming || !text.trim()}
+          disabled={isStreaming || !text.trim() || !isBackendReady}
           className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-blue-300 transition-all shadow-lg shadow-blue-200"
         >
           {isStreaming ? "Translating..." : "Translate"}

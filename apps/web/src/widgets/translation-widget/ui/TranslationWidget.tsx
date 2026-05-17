@@ -15,6 +15,7 @@ import {
   useTranslationSync,
   useTranslateTextResult,
 } from "@/features/translate-text";
+import { useConfigStatus } from "@/features/configure-provider";
 import { ErrorMessage } from "@/shared/ui";
 
 export const TranslationWidget: React.FC = () => {
@@ -33,6 +34,8 @@ export const TranslationWidget: React.FC = () => {
   } = useTranslateTextResult();
   const { history, clearHistory } = useTranslationHistory();
   const handleTranslate = useTranslationStore((s) => s.handleTranslate);
+  const { isLoading, isError, status: configStatus } = useConfigStatus();
+  const isBackendReady = !isLoading && !isError && configStatus.llmConnected;
 
   useEffect(() => {
     const next = modeParam as TranslationRequest["mode"];
@@ -69,6 +72,7 @@ export const TranslationWidget: React.FC = () => {
         onConfigChange={setConfig}
         onTranslate={handleTranslate}
         isStreaming={status === "streaming"}
+        isBackendReady={isBackendReady}
         history={history}
         onClearHistory={clearHistory}
       />

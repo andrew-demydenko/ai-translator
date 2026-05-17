@@ -7,12 +7,14 @@ interface TopicManagementProps {
   onGenerate: (topic: Topic) => void;
   isGenerating: boolean;
   generatingTopicId: string | null;
+  isBackendReady: boolean;
 }
 
 export const TopicManagement: React.FC<TopicManagementProps> = ({
   onGenerate,
   isGenerating,
   generatingTopicId,
+  isBackendReady,
 }) => {
   const { topics, addTopic, deleteTopic } = useTopicStore();
 
@@ -36,6 +38,7 @@ export const TopicManagement: React.FC<TopicManagementProps> = ({
             onDelete={deleteTopic}
             isGenerating={isGenerating}
             isThisTopicGenerating={generatingTopicId === topic.id}
+            isBackendReady={isBackendReady}
           />
         ))}
       </div>
