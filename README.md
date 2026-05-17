@@ -1,6 +1,6 @@
 # AI Translator
 
-A translation tool powered by local Large Language Models (LLMs) via Ollama. It uses a monorepo architecture with a React frontend and a Node.js backend.
+A translation tool powered by Large Language Models (LLMs) via Ollama or DeepSeek. It uses a monorepo architecture with a React frontend and a Node.js backend.
 
 ## Features
 
@@ -10,6 +10,7 @@ A translation tool powered by local Large Language Models (LLMs) via Ollama. It 
 - **Rich Output**: Includes alternatives, usage examples, and formality indicators.
 - **Practice Mode**: A dedicated mode for practicing sentences and vocabulary.
 - **History & Topics**: Save translations and organize them by topic.
+- **Multiple Providers**: Supports Ollama and DeepSeek with hot-swappable configuration.
 
 ## Tech Stack
 
@@ -31,14 +32,16 @@ A translation tool powered by local Large Language Models (LLMs) via Ollama. It 
 
 - **Node.js** + **Express**
 - **ws (WebSocket)**: For streaming LLM responses
-- **Ollama SDK**: Local LLM integration
+- **OpenAI SDK** / **Ollama SDK**: LLM provider integration
 - **Zod**: Schema validation
+- **Structured logging**: Server-side logging for WebSocket events and errors
 
 ## Prerequisites
 
-- **Node.js** (v18+)
-- **Ollama**: Must be installed and running locally.
-- **Model**: `llama3` is recommended (configurable via `.env`).
+- **Node.js** (v20+)
+- **pnpm** (v9+)
+- **Ollama** (optional): Must be installed and running locally if using Ollama provider.
+- **Model**: e.g. `llama3.2` for Ollama, `deepseek-chat` for DeepSeek.
 
 ## Getting Started
 
@@ -52,29 +55,31 @@ A translation tool powered by local Large Language Models (LLMs) via Ollama. It 
 2. **Install dependencies**:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Configure environment variables**:
    Create a `.env` file in the root or `apps/api`:
 
    ```env
-   OLLAMA_MODEL=llama3
-   OLLAMA_HOST=http://localhost:11434
-   OLLAMA_API_KEY=...
+   VITE_API_URL=http://localhost:3001 // for local development
    ```
 
+   > **Note**: Provider, model, and host can be configured from the UI settings panel. API key can be saved via the UI (stored in an httpOnly cookie).
+
 4. **Run the development server**:
+
    ```bash
-   npm run dev
+   pnpm dev
    ```
+
    _This starts the API on port 3001 and the Web app on port 3000._
 
 ## Project Structure
 
 ### Monorepo Layout
 
-- `apps/api`: Express server with WebSocket handlers and Ollama integration.
+- `apps/api`: Express server with WebSocket handlers and LLM provider integration.
 - `apps/web`: React application following FSD principles.
 - `packages/config`: Shared TS and build tool configurations.
 - `packages/prompts`: LLM prompt templates.

@@ -7,8 +7,30 @@ import type {
   FieldUpdatePayload,
   GenerationMode,
   ResultByType,
+  ProviderPayload,
 } from "@ai-translator/shared-types";
-import { WS_URL } from "@/shared/config/ws";
+import { WS_URL } from "@/shared/config/constats";
+
+const PROVIDER_STORAGE_KEY = "ai_translator_provider_config";
+
+function loadProviderConfig(): ProviderPayload | null {
+  try {
+    const saved = localStorage.getItem(PROVIDER_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.provider) {
+        return {
+          provider: parsed.provider,
+          model: parsed.model ?? "",
+          host: parsed.host ?? "",
+        };
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
 
 type Result = TranslationResult | PracticeResult;
 
@@ -48,6 +70,10 @@ class GenerationSocket {
     this.listeners.forEach((l) => l());
   }
 
+  private log(...args: unknown[]): void {
+    console.log(`[WS ${this.currentType ?? "idle"}]`, ...args);
+  }
+
   private connect(): void {
     if (this.isCleanedUp) return;
     if (
@@ -56,13 +82,22 @@ class GenerationSocket {
     )
       return;
 
+    this.log(
+      "Connecting to",
+      WS_URL,
+      `(attempt ${this.reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS + 1})`,
+    );
+
     const ws = new WebSocket(WS_URL);
     this.wsRef = ws;
 
     ws.onopen = () => {
+      this.log("Connected successfully");
       this.reconnectAttempts = 0;
       this.state = { ...this.state, error: null };
       this.emitChange();
+
+      this.sendConfigure();
 
       if (this.pendingRequestRef) {
         const req = this.pendingRequestRef;
@@ -91,6 +126,7 @@ class GenerationSocket {
           };
           this.emitChange();
         } else if (msg.type === "done") {
+          this.log("Generation done");
           this.state = {
             ...this.state,
             status: "done",
@@ -100,6 +136,7 @@ class GenerationSocket {
           };
           this.emitChange();
         } else if (msg.type === "error") {
+          this.log("Generation error:", msg.payload);
           this.state = {
             ...this.state,
             status: "error",
@@ -108,16 +145,29 @@ class GenerationSocket {
           this.emitChange();
         }
       } catch (error) {
-        console.error("Error parsing message:", error);
+        console.error("[WS] Error parsing message:", error);
       }
     };
 
-    ws.onclose = () => {
-      if (this.isCleanedUp) return;
+    ws.onclose = (event) => {
+      if (this.isCleanedUp) {
+        this.log("Connection closed (cleanup)");
+        return;
+      }
+
+      this.log(
+        "Connection closed: code=",
+        event.code,
+        "reason=",
+        event.reason || "none",
+        "wasClean=",
+        event.wasClean,
+      );
 
       this.reconnectAttempts += 1;
 
       if (this.reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+        this.log("Max reconnect attempts reached, giving up");
         this.pendingRequestRef = null;
         this.state = {
           ...this.state,
@@ -129,14 +179,38 @@ class GenerationSocket {
       }
 
       const delay = BASE_RECONNECT_DELAY_MS * 2 ** (this.reconnectAttempts - 1);
+      this.log(
+        `Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`,
+      );
       this.cleanupTimeout = setTimeout(() => this.connect(), delay);
     };
 
-    ws.onerror = () => {};
+    ws.onerror = (event) => {
+      this.log("Connection error:", event);
+    };
+  }
+
+  private sendConfigure(): void {
+    const providerConfig = loadProviderConfig();
+    if (providerConfig && this.wsRef?.readyState === WebSocket.OPEN) {
+      this.log(
+        "Sending configure:",
+        providerConfig.provider,
+        providerConfig.model,
+      );
+      this.wsRef.send(
+        JSON.stringify({
+          type: "configure",
+          requestId: crypto.randomUUID(),
+          payload: providerConfig,
+        }),
+      );
+    }
   }
 
   private sendTranslateRequest(req: TranslationRequest): void {
     if (this.wsRef?.readyState === WebSocket.OPEN) {
+      this.log("Sending translate request:", req.generationType);
       this.state = {
         status: "streaming",
         chunks: "",
@@ -145,6 +219,7 @@ class GenerationSocket {
         error: null,
       };
       this.emitChange();
+
       this.wsRef.send(
         JSON.stringify({
           type: "translate",
@@ -153,6 +228,7 @@ class GenerationSocket {
         }),
       );
     } else {
+      this.log("Socket not open, queuing request");
       this.pendingRequestRef = req;
     }
   }

@@ -26,7 +26,7 @@ export class LLMService {
     const extractor = new FieldExtractor(request.generationType);
     let fullContent = "";
     const lastEmitted: Record<string, string> = {};
-    let lastResult: Record<string, any> = {};
+    let lastResult: Record<string, {} | null> = {};
 
     for await (const chunk of stream) {
       const content = chunk.message.content;

@@ -36,16 +36,24 @@ interface ResultTypeMap {
   practice: PracticeResult;
 }
 
+export type Provider = "ollama" | "deepseek";
+
 export type ResultByType<T extends keyof ResultTypeMap> = ResultTypeMap[T];
 
+export interface ProviderPayload {
+  provider: Provider;
+  model: string;
+  host: string;
+}
+
 export interface WSMessage<T = unknown> {
-  type: "translate" | "chunk" | "done" | "error" | "field_update";
+  type: "translate" | "chunk" | "done" | "error" | "field_update" | "configure";
   requestId: string;
   payload: T;
 }
 
 export interface FieldUpdatePayload {
   field: keyof TranslationResult;
-  value: any;
+  value: string;
   isComplete: boolean;
 }

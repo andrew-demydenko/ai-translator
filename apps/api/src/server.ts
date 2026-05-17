@@ -1,22 +1,16 @@
 import http from "http";
 import { WebSocketServer } from "ws";
 import { app } from "./app";
-import { config, getProviderConfig } from "./config";
+import { config } from "./config";
 import { WSHandler } from "./websocket/ws.handler";
-import { LLMService } from "./services/llm";
-import { getTranslationProvider } from "./services/providers";
 import { logger } from "./middleware/logger";
 
 export function createServer() {
   const server = http.createServer(app);
   const wss = new WebSocketServer({ server });
 
-  const providerConfig = getProviderConfig();
-  const provider = getTranslationProvider(config.provider, providerConfig);
-  const llmService = new LLMService(provider);
-
-  wss.on("connection", (socket) => {
-    new WSHandler(socket, llmService);
+  wss.on("connection", (socket, request) => {
+    new WSHandler(socket, request);
   });
 
   return server;

@@ -11,7 +11,7 @@ function escapeTag(tag: string): string {
   return tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function parseValue(key: string, raw: string): any {
+function parseValue(key: string, raw: string): {} | null | undefined {
   if (key === "alternatives" || key === "synonyms") {
     return raw
       .split("|")
@@ -26,7 +26,10 @@ function parseValue(key: string, raw: string): any {
         const parts = s.split("->").map((p) => p.trim());
         return { source: parts[0] || "", translated: parts[1] || "" };
       })
-      .filter((item: any) => item.source || item.translated);
+      .filter(
+        (item: { source: string; translated: string }) =>
+          item.source || item.translated,
+      );
   }
 
   if (key === "confidence") {
@@ -45,7 +48,9 @@ function parseValue(key: string, raw: string): any {
   return raw;
 }
 
-function createDefaultResult(generationType: string): Record<string, any> {
+function createDefaultResult(
+  generationType: string,
+): Record<string, {} | null> {
   if (generationType === "practice") {
     return { original: "", translation: "" };
   }
@@ -61,14 +66,14 @@ function createDefaultResult(generationType: string): Record<string, any> {
 }
 
 export interface ExtractionResult {
-  values: Record<string, any>;
+  values: Record<string, {} | null>;
   isFieldComplete: Record<string, boolean>;
   allComplete: boolean;
 }
 
 export class FieldExtractor {
   private fields: readonly FieldConfig[];
-  private defaultResult: Record<string, any>;
+  private defaultResult: Record<string, {} | null>;
 
   constructor(generationType: string) {
     this.fields = FIELDS_BY_TYPE[generationType] || TRANSLATION_FIELDS;
@@ -76,7 +81,7 @@ export class FieldExtractor {
   }
 
   extract(text: string): ExtractionResult {
-    const values: Record<string, any> = {};
+    const values: Record<string, {} | null> = {};
     const isFieldComplete: Record<string, boolean> = {};
     let resolvedCount = 0;
 
