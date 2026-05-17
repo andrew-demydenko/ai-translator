@@ -5,4 +5,4 @@ export const API_URL: string =
 const wspProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 export const WS_URL: string =
   API_URL.replace(window.location.protocol, wspProtocol) ||
-  `${wspProtocol}://${window.location.host}`;
+  `${wspProtocol}//${window.location.host}`;
