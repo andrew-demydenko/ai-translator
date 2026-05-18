@@ -19,7 +19,10 @@ export class OllamaService implements TranslationProvider {
 
   async checkHealth() {
     try {
-      await this.ollama.ps();
+      const list = await this.ollama.list();
+      if (!list.models || list.models.length === 0) {
+        throw new Error("Ollama models not found");
+      }
       return { status: "ok", connected: true };
     } catch (error) {
       return { status: "error", connected: false, error: String(error) };

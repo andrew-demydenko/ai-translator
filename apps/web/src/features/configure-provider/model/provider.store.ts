@@ -29,7 +29,7 @@ function loadConfig(): { provider: Provider; model: string; host: string } {
   return { provider: "ollama", model: "", host: "" };
 }
 
-function saveConfig(provider: Provider, model: string, host: string) {
+export function saveConfig(provider: Provider, model: string, host: string) {
   localStorage.setItem(
     PROVIDER_STORAGE_KEY,
     JSON.stringify({ provider, model, host }),
@@ -40,20 +40,17 @@ export const useProviderStore = create<ProviderStore>((set) => ({
   ...loadConfig(),
 
   setProvider: (provider) =>
-    set((state) => {
-      saveConfig(provider, state.model, state.host);
+    set(() => {
       return { provider };
     }),
 
   setModel: (model) =>
-    set((state) => {
-      saveConfig(state.provider, model, state.host);
+    set(() => {
       return { model };
     }),
 
   setHost: (host) =>
-    set((state) => {
-      saveConfig(state.provider, state.model, host);
+    set(() => {
       return { host };
     }),
 }));

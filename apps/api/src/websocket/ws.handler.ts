@@ -11,13 +11,18 @@ import {
 } from "../schemas/practice.schema";
 import { LLMService } from "../services/llm";
 import { getTranslationProvider } from "../services/providers";
+import {
+  isProviderConfigured,
+  resolveProviderConfig,
+  ResolvedProviderConfig,
+} from "../config";
 import { logger } from "../middleware/logger";
 import { parseCookies } from "../utils/cookies";
 
 const API_KEY_COOKIE = "provider_api_key";
 
 export class WSHandler {
-  private providerConfig: ProviderPayload | null = null;
+  private providerConfig: ResolvedProviderConfig | null = null;
   private connectedAt: number = Date.now();
 
   constructor(
@@ -65,36 +70,32 @@ export class WSHandler {
     }
   }
 
-  private resolveApiKey(): string {
-    const cookies = parseCookies(this.request.headers.cookie);
-    const apiKey = cookies[API_KEY_COOKIE];
-    if (!apiKey) {
-      throw new Error(
-        "API key not found. Please set it in the provider settings.",
-      );
-    }
-    return apiKey;
-  }
-
   private createLLMService(): LLMService {
-    if (!this.providerConfig) {
-      throw new Error(
-        "Provider not configured. Please configure provider in settings.",
-      );
-    }
+    const providerData = resolveProviderConfig(this.providerConfig || {});
+    const { provider, model, host, apiKey } = providerData;
 
-    if (!this.providerConfig.model) {
-      throw new Error("Model not specified in provider settings.");
+    if (!isProviderConfigured({ provider, model, host, apiKey })) {
+      if (!model) {
+        throw new Error(
+          "Model not configured. Set PROVIDER_MODEL env or configure model in UI settings.",
+        );
+      }
+      if (provider === "deepseek" && !apiKey) {
+        throw new Error(
+          "DeepSeek requires an API key. Set PROVIDER_API_KEY env or save API key in UI settings.",
+        );
+      }
+      throw new Error("Provider not configured.");
     }
 
     const providerConfig = {
-      host: this.providerConfig.host || "http://localhost:11434",
-      model: this.providerConfig.model,
-      apiKey: this.resolveApiKey(),
+      host,
+      model,
+      apiKey,
     };
 
     const translationProvider = getTranslationProvider(
-      this.providerConfig.provider,
+      provider,
       providerConfig,
     );
     return new LLMService(translationProvider);
@@ -108,7 +109,12 @@ export class WSHandler {
       requestId = msg.requestId;
 
       if (msg.type === "configure") {
-        this.providerConfig = msg.payload as ProviderPayload;
+        const cookies = parseCookies(this.request.headers.cookie);
+
+        this.providerConfig = resolveProviderConfig({
+          ...(msg.payload as ProviderPayload),
+          apiKey: cookies[API_KEY_COOKIE],
+        });
         logger.info("Provider configured", {
           provider: this.providerConfig.provider,
           model: this.providerConfig.model,

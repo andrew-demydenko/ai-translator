@@ -21,7 +21,7 @@ const ConnectionIndicator: React.FC = () => {
     title = "Failed to check LLM status";
   } else if (status.llmConnected) {
     color = "bg-green-500";
-    label = "LLM Connected";
+    label = `LLM Connected (${status.model})`;
     title = `LLM connected (${status.provider}: ${status.model})`;
   } else {
     color = "bg-red-500";

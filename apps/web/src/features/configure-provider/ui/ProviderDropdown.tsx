@@ -2,7 +2,21 @@ import React, { useState } from "react";
 import { Popover } from "@/shared/ui";
 import { useProviderStore } from "../model/provider.store";
 import { useSetApiKey } from "../model/useSetApiKey";
+import { saveConfig } from "../model/provider.store";
 import type { Provider } from "../model/types";
+
+const validateProvider = (data: {
+  provider: Provider;
+  model: string;
+  host: string;
+  apiKey: string;
+}) => {
+  if (!data.provider || !data.host || !data.model) {
+    return false;
+  }
+
+  return data.provider === "deepseek" && data.apiKey;
+};
 
 export const ProviderDropdown: React.FC = () => {
   const { provider, model, host, setProvider, setModel, setHost } =
@@ -13,6 +27,7 @@ export const ProviderDropdown: React.FC = () => {
   const saveApiKeyMutation = useSetApiKey(() => {
     setApiKeyLocal("");
     setIsOpen(false);
+    saveConfig(provider, model, host);
     saveApiKeyMutation.reset();
   });
 
@@ -20,6 +35,13 @@ export const ProviderDropdown: React.FC = () => {
     if (!apiKey.trim()) return;
     saveApiKeyMutation.mutate(apiKey.trim());
   };
+
+  const isDataValid = validateProvider({
+    provider,
+    model,
+    host,
+    apiKey: apiKey.trim(),
+  });
 
   return (
     <Popover
@@ -108,7 +130,9 @@ export const ProviderDropdown: React.FC = () => {
             />
             <button
               onClick={handleSaveApiKey}
-              disabled={!apiKey.trim() || saveApiKeyMutation.isPending}
+              disabled={
+                !apiKey.trim() || saveApiKeyMutation.isPending || !isDataValid
+              }
               className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {saveApiKeyMutation.isPending ? "..." : "Save"}

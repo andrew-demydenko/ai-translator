@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { AppError } from "../middleware/error-handler";
-import { config } from "../config";
+import { resolveProviderConfig, isProviderConfigured } from "../config";
 import { getTranslationProvider } from "../services/providers";
 import { logger } from "../middleware/logger";
 import { parseCookies } from "../utils/cookies";
@@ -29,33 +29,53 @@ export const setApiKey = async (req: Request, res: Response) => {
 export const getStatus = async (req: Request, res: Response) => {
   const cookies = parseCookies(req.headers.cookie);
   const cookieApiKey = cookies[API_KEY_COOKIE];
-  const envApiKey = config.apiKey;
-  const hasApiKey = !!(cookieApiKey || envApiKey);
 
-  const clientProvider = (req.query.provider as string) || config.provider;
-  const clientModel = (req.query.model as string) || config.model || "";
-  const clientHost = (req.query.host as string) || config.host;
-  const envFallbackModel = config.model || "";
+  const resolved = resolveProviderConfig({
+    provider: req.query.provider as string | undefined,
+    model: req.query.model as string | undefined,
+    host: req.query.host as string | undefined,
+    apiKey: cookieApiKey,
+  });
 
-  const resolvedModel = clientModel || envFallbackModel;
-  const resolvedProvider = clientProvider;
+  const configured = isProviderConfigured({
+    provider: resolved.provider,
+    model: resolved.model,
+    host: resolved.host,
+    apiKey: resolved.apiKey,
+  });
+
+  if (!configured) {
+    let reason: string;
+    if (!resolved.model) {
+      reason =
+        "Model not configured. Set PROVIDER_MODEL env or configure model in UI settings.";
+    } else if (resolved.provider === "deepseek" && !resolved.apiKey) {
+      reason =
+        "DeepSeek requires an API key. Set PROVIDER_API_KEY env or save API key in UI settings.";
+    } else {
+      reason = "Provider not configured.";
+    }
+
+    res.json({
+      apiKeyConfigured: !!resolved.apiKey,
+      llmConnected: false,
+      llmStatus: `not configured: ${reason}`,
+      provider: resolved.provider,
+      model: resolved.model,
+    });
+    return;
+  }
 
   let llmConnected = false;
   let llmStatus = "unknown";
 
   try {
-    if (!resolvedModel) {
-      throw new Error(
-        "PROVIDER_MODEL environment variable is required. Example: PROVIDER_MODEL=llama3.2",
-      );
-    }
-
     const resolvedConfig = {
-      host: clientHost,
-      apiKey: cookieApiKey || envApiKey || "",
-      model: resolvedModel,
+      host: resolved.host,
+      apiKey: resolved.apiKey,
+      model: resolved.model,
     };
-    const provider = getTranslationProvider(resolvedProvider, resolvedConfig);
+    const provider = getTranslationProvider(resolved.provider, resolvedConfig);
     const health = await provider.checkHealth();
     llmConnected = health.connected;
     llmStatus = health.status;
@@ -68,10 +88,10 @@ export const getStatus = async (req: Request, res: Response) => {
   }
 
   res.json({
-    apiKeyConfigured: hasApiKey,
+    apiKeyConfigured: !!resolved.apiKey,
     llmConnected,
     llmStatus,
-    provider: resolvedProvider,
-    model: resolvedModel,
+    provider: resolved.provider,
+    model: resolved.model,
   });
 };
