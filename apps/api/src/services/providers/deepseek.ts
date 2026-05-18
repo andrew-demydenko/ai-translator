@@ -24,7 +24,7 @@ export class DeepSeekService implements TranslationProvider {
       return { status: "ok", connected: true };
     } catch (error: unknown) {
       if (error instanceof APIError && error.code === "invalid_request_error") {
-        throw new Error("Deepseek API key not configured");
+        throw new Error("Deepseek API key is invalid");
       } else {
         throw new Error("Deepseek models not found");
       }
