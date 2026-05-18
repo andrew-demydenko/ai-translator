@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { APIError } from "openai";
 import type { ChatCompletionCreateParamsStreaming } from "openai/resources/chat/completions";
 import { TranslationProvider, ProviderConfig } from "./types";
 
@@ -20,12 +20,14 @@ export class DeepSeekService implements TranslationProvider {
 
   async checkHealth() {
     try {
-      if (!this.config.apiKey) {
-        throw new Error("Provider API key not configured");
-      }
+      await this.provider.models.list();
       return { status: "ok", connected: true };
-    } catch (error) {
-      return { status: "error", connected: false, error: String(error) };
+    } catch (error: unknown) {
+      if (error instanceof APIError && error.code === "invalid_request_error") {
+        throw new Error("Deepseek API key not configured");
+      } else {
+        throw new Error("Deepseek models not found");
+      }
     }
   }
 
