@@ -30,12 +30,26 @@ export function resolveProviderConfig(clientParams?: {
   host?: string;
   apiKey?: string;
 }): ResolvedProviderConfig {
-  return {
-    provider: clientParams?.provider ?? config.provider,
-    model: clientParams?.model ?? config.model ?? "",
-    host: clientParams?.host ?? config.host,
-    apiKey: clientParams?.apiKey ?? config.apiKey ?? "",
-  };
+  if (
+    !clientParams ||
+    !clientParams.provider ||
+    !clientParams.model ||
+    !clientParams.host
+  ) {
+    return {
+      provider: config.provider,
+      model: config.model ?? "",
+      host: config.host,
+      apiKey: config.apiKey ?? "",
+    };
+  } else {
+    return {
+      provider: clientParams?.provider,
+      model: clientParams?.model,
+      host: clientParams?.host,
+      apiKey: clientParams?.apiKey ?? "",
+    };
+  }
 }
 
 export function isProviderConfigured({
